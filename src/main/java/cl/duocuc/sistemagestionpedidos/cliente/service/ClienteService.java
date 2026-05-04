@@ -16,9 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class ClienteService {
 
-    private static final String ESTADO_ACTIVO = "ACTIVO";
-    private static final String ESTADO_INACTIVO = "INACTIVO";
-
     private final ClienteRepository clienteRepository;
     private final Map<Long, Cliente> cacheClientes = new ConcurrentHashMap<>();
 
@@ -42,7 +39,6 @@ public class ClienteService {
         cliente.setComuna(normalizarTexto(request.getComuna()));
         cliente.setRegion(normalizarTexto(request.getRegion()));
         cliente.setFechaRegistro(LocalDate.now());
-        cliente.setEstado(ESTADO_ACTIVO);
 
         Cliente guardado = clienteRepository.save(cliente);
         cacheClientes.put(guardado.getId(), guardado);
@@ -50,7 +46,7 @@ public class ClienteService {
     }
 
     public List<ClienteResponse> listarClientes() {
-        return clienteRepository.findByEstado(ESTADO_ACTIVO)
+        return clienteRepository.findAll()
                 .stream()
                 .peek(cliente -> cacheClientes.put(cliente.getId(), cliente))
                 .map(this::convertirAResponse)
@@ -64,8 +60,6 @@ public class ClienteService {
                     .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con ID " + id));
             cacheClientes.put(cliente.getId(), cliente);
         }
-
-        validarClienteActivo(cliente);
         return convertirAResponse(cliente);
     }
 
@@ -74,7 +68,6 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findByRut(rutNormalizado)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con RUT " + rutNormalizado));
 
-        validarClienteActivo(cliente);
         cacheClientes.put(cliente.getId(), cliente);
         return convertirAResponse(cliente);
     }
@@ -82,8 +75,6 @@ public class ClienteService {
     public ClienteResponse actualizarCliente(Long id, ClienteRequest request) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con ID " + id));
-
-        validarClienteActivo(cliente);
 
         String rutNormalizado = normalizarTexto(request.getRut());
         if (!cliente.getRut().equals(rutNormalizado) && clienteRepository.existsByRut(rutNormalizado)) {
@@ -103,19 +94,12 @@ public class ClienteService {
         return convertirAResponse(actualizado);
     }
 
-    public void eliminarClienteLogico(Long id) {
+    public void eliminarCliente(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con ID " + id));
 
-        cliente.setEstado(ESTADO_INACTIVO);
-        Cliente actualizado = clienteRepository.save(cliente);
-        cacheClientes.put(actualizado.getId(), actualizado);
-    }
-
-    private void validarClienteActivo(Cliente cliente) {
-        if (ESTADO_INACTIVO.equalsIgnoreCase(cliente.getEstado())) {
-            throw new ResourceNotFoundException("Cliente no encontrado o inactivo");
-        }
+        clienteRepository.delete(cliente);
+        cacheClientes.remove(id);
     }
 
     private ClienteResponse convertirAResponse(Cliente cliente) {
@@ -128,8 +112,7 @@ public class ClienteService {
                 cliente.getDireccion(),
                 cliente.getComuna(),
                 cliente.getRegion(),
-                cliente.getFechaRegistro(),
-                cliente.getEstado()
+                cliente.getFechaRegistro()
         );
     }
 

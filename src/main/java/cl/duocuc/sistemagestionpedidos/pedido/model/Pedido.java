@@ -21,10 +21,8 @@ public class Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "numero_pedido", nullable = false, unique = true)
-    private String numeroPedido;
+    @Column(name = "numero_pedido")
+    private Long numeroPedido;
 
     @Column(nullable = false)
     private Long clienteId;
@@ -37,7 +35,6 @@ public class Pedido {
 
     private Double monto;
     private LocalDateTime fechaCreacion;
-    // eliminado estadoRegistro - no se usa eliminación lógica
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemPedido> items = new ArrayList<>();

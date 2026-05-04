@@ -33,5 +33,4 @@ public class Cliente {
     private String comuna;
     private String region;
     private LocalDate fechaRegistro;
-    private String estado;
 }

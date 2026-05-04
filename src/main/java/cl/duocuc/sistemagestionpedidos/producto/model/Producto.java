@@ -37,9 +37,6 @@ public class Producto {
     private Integer stock;
 
     @Column(nullable = false)
-    private String estado;
-
-    @Column(nullable = false)
     private LocalDateTime fechaCreacion;
 }
 

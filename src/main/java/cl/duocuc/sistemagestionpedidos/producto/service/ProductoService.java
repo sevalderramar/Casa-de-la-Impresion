@@ -14,9 +14,6 @@ import java.util.List;
 @Service
 public class ProductoService {
 
-    private static final String ESTADO_ACTIVO = "ACTIVO";
-    private static final String ESTADO_INACTIVO = "INACTIVO";
-
     private final ProductoRepository productoRepository;
 
     public ProductoService(ProductoRepository productoRepository) {
@@ -37,7 +34,6 @@ public class ProductoService {
         producto.setCategoria(normalizarTexto(request.getCategoria()));
         producto.setPrecio(request.getPrecio());
         producto.setStock(request.getStock());
-        producto.setEstado(ESTADO_ACTIVO);
         producto.setFechaCreacion(LocalDateTime.now());
 
         Producto guardado = productoRepository.save(producto);
@@ -45,7 +41,7 @@ public class ProductoService {
     }
 
     public List<ProductoResponse> listarProductos() {
-        return productoRepository.findByEstado(ESTADO_ACTIVO)
+        return productoRepository.findAll()
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
@@ -54,8 +50,6 @@ public class ProductoService {
     public ProductoResponse obtenerProductoPorId(Long id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID " + id));
-
-        validarProductoActivo(producto);
         return convertirAResponse(producto);
     }
 
@@ -64,7 +58,6 @@ public class ProductoService {
         Producto producto = productoRepository.findByNombreIgnoreCase(nombreNormalizado)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con nombre " + nombreNormalizado));
 
-        validarProductoActivo(producto);
         return convertirAResponse(producto);
     }
 
@@ -72,7 +65,6 @@ public class ProductoService {
         String categoriaNormalizada = normalizarTexto(categoria);
         return productoRepository.findByCategoriaIgnoreCase(categoriaNormalizada)
                 .stream()
-                .filter(producto -> ESTADO_ACTIVO.equalsIgnoreCase(producto.getEstado()))
                 .map(this::convertirAResponse)
                 .toList();
     }
@@ -80,8 +72,6 @@ public class ProductoService {
     public ProductoResponse actualizarProducto(Long id, ProductoRequest request) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID " + id));
-
-        validarProductoActivo(producto);
 
         String nombreNormalizado = normalizarTexto(request.getNombre());
         if (!producto.getNombre().equalsIgnoreCase(nombreNormalizado)
@@ -101,19 +91,11 @@ public class ProductoService {
         return convertirAResponse(actualizado);
     }
 
-    public void eliminarProductoLogico(Long id) {
+    public void eliminarProducto(Long id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID " + id));
 
-        validarProductoActivo(producto);
-        producto.setEstado(ESTADO_INACTIVO);
-        productoRepository.save(producto);
-    }
-
-    private void validarProductoActivo(Producto producto) {
-        if (ESTADO_INACTIVO.equalsIgnoreCase(producto.getEstado())) {
-            throw new ResourceNotFoundException("Producto no encontrado o inactivo");
-        }
+        productoRepository.delete(producto);
     }
 
     private void validarPrecioYStock(Double precio, Integer stock) {
@@ -133,7 +115,6 @@ public class ProductoService {
                 producto.getCategoria(),
                 producto.getPrecio(),
                 producto.getStock(),
-                producto.getEstado(),
                 producto.getFechaCreacion()
         );
     }

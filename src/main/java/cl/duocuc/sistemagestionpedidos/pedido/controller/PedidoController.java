@@ -2,7 +2,9 @@ package cl.duocuc.sistemagestionpedidos.pedido.controller;
 
 import cl.duocuc.sistemagestionpedidos.pedido.dto.PedidoRequest;
 import cl.duocuc.sistemagestionpedidos.pedido.dto.PedidoResponse;
+import cl.duocuc.sistemagestionpedidos.pedido.dto.EstadoRequest;
 import cl.duocuc.sistemagestionpedidos.pedido.service.PedidoService;
+import cl.duocuc.sistemagestionpedidos.estado.dto.CambioEstadoResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +26,7 @@ public class PedidoController {
     public ResponseEntity<PedidoResponse> crearPedido(@Valid @RequestBody PedidoRequest request) {
         PedidoResponse response = pedidoService.crearPedido(request);
         return ResponseEntity
-                .created(URI.create("/api/pedidos/" + response.getId()))
+                .created(URI.create("/api/pedidos/" + response.getNumeroPedido()))
                 .body(response);
     }
 
@@ -33,14 +35,14 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPedidos());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PedidoResponse> obtenerPedidoPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(pedidoService.obtenerPedidoPorId(id));
+    @GetMapping("/{numeroPedido}")
+    public ResponseEntity<PedidoResponse> obtenerPedidoPorNumero(@PathVariable Long numeroPedido) {
+        return ResponseEntity.ok(pedidoService.obtenerPedidoPorNumero(numeroPedido));
     }
 
     @GetMapping("/numero/{numeroPedido}")
-    public ResponseEntity<PedidoResponse> obtenerPedidoPorNumero(@PathVariable String numeroPedido) {
-        return ResponseEntity.ok(pedidoService.obtenerPedidoPorNumero(numeroPedido));
+    public ResponseEntity<PedidoResponse> obtenerPedidoPorNumeroStr(@PathVariable String numeroPedido) {
+        return ResponseEntity.ok(pedidoService.obtenerPedidoPorNumeroStr(numeroPedido));
     }
 
     @GetMapping("/cliente/{clienteId}")
@@ -48,25 +50,21 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPedidosPorCliente(clienteId));
     }
 
-    @PatchMapping("/{id}/estado")
-    public ResponseEntity<PedidoResponse> actualizarEstado(@PathVariable Long id, @RequestParam String estado) {
-        return ResponseEntity.ok(pedidoService.actualizarEstado(id, estado));
+    @PatchMapping("/{numeroPedido}/estado")
+    public ResponseEntity<PedidoResponse> actualizarEstado(@PathVariable Long numeroPedido,
+                                                            @Valid @RequestBody EstadoRequest request) {
+        return ResponseEntity.ok(pedidoService.actualizarEstado(numeroPedido, request));
     }
 
-    @GetMapping("/filtro")
-    public ResponseEntity<List<PedidoResponse>> filtrarPorEstado(@RequestParam String estado) {
-        return ResponseEntity.ok(pedidoService.filtrarPorEstado(estado));
+    @GetMapping("/{numeroPedido}/historial")
+    public ResponseEntity<java.util.List<CambioEstadoResponse>> obtenerHistorial(@PathVariable Long numeroPedido) {
+        return ResponseEntity.ok(pedidoService.listarHistorial(numeroPedido));
     }
 
-    @GetMapping("/filtro-combinado")
-    public ResponseEntity<List<PedidoResponse>> filtrarPorEstadoYTipoDespacho(@RequestParam String estado,
-                                                                               @RequestParam String tipoDespacho) {
-        return ResponseEntity.ok(pedidoService.filtrarPorEstadoYTipoDespacho(estado, tipoDespacho));
-    }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarPedido(@PathVariable Long id) {
-        pedidoService.eliminarPedido(id);
+    @DeleteMapping("/{numeroPedido}")
+    public ResponseEntity<Void> eliminarPedido(@PathVariable Long numeroPedido) {
+        pedidoService.eliminarPedido(numeroPedido);
         return ResponseEntity.noContent().build();
     }
 }

@@ -10,7 +10,7 @@ su objetivo, estructura, entidades, reglas de negocio y endpoints REST.
 ------------------------------
 
 El módulo `cliente` gestiona la vida de los clientes dentro del sistema: creación, consulta,
-actualización y eliminación lógica. Provee una API REST para exponer operaciones sobre clientes y
+actualización y eliminación (física). Provee una API REST para exponer operaciones sobre clientes y
 mantiene las reglas de negocio necesarias para asegurar la integridad de los datos.
 
 2. Qué problema resuelve
@@ -93,15 +93,15 @@ existencia de `clienteId` en `cliente-service`).
 Aunque la entidad `Cliente` no contiene cálculos numéricos como `Pedido`, el módulo aplica ciertos
 comportamientos automáticos:
 
-- `fechaRegistro` se asigna automáticamente al crear un cliente si no es provista.
-- `estado` por defecto se inicializa como `ACTIVO` al crear un cliente.
+- `fechaRegistro` se asigna automáticamente al crear un cliente con la fecha de hoy.
 
-9. Eliminación lógica
-----------------------
+9. Eliminación física
+---------------------
 
-La eliminación de clientes es lógica: se marca el `estado` como `INACTIVO` en lugar de borrar la fila.
-Esto preserva el histórico y permite auditoría. Las consultas por defecto deben devolver únicamente
-clientes con `estado = ACTIVO` salvo que se requiera lo contrario.
+La eliminación de clientes es **física**: se elimina completamente el registro de la base de datos.
+Esto refleja la política de gestión de datos actual donde los clientes son eliminados cuando ya no
+se necesitan referencias a ellos. Si se requiere auditoría histórica en el futuro, se implementará
+una tabla de auditoría separada.
 
 10. DTOs
 --------
@@ -122,8 +122,8 @@ clientes con `estado = ACTIVO` salvo que se requiera lo contrario.
 `ClienteRepository` extiende típicamente `JpaRepository<Cliente, Long>` y provee:
 
 - Operaciones CRUD estándar.
-- Consultas derivadas por nombre (por ejemplo `findByRutAndEstado` o `findByEstado`).
-- Métodos para verificar unicidad (`existsByRut`) y búsquedas paginadas.
+- Consultas derivadas por nombre (`findByRut`, `findByEstado`).
+- Métodos para verificar unicidad (`existsByRut`).
 
 12. Service y reglas de negocio
 -------------------------------
@@ -149,7 +149,7 @@ El controlador `ClienteController` expone los siguientes endpoints REST (rutas b
   - Valida reglas de negocio y devuelve `201 Created` con `ClienteResponse`.
 
 - GET /api/clientes
-  - Lista clientes (por defecto `estado = ACTIVO`). Soporta paginación y filtros simples.
+   - Lista todos los clientes registrados.
 
 - GET /api/clientes/{id}
   - Obtiene un cliente por su `id` y devuelve `ClienteResponse`.
@@ -161,7 +161,8 @@ El controlador `ClienteController` expone los siguientes endpoints REST (rutas b
   - Actualiza los datos del cliente (reemplazo completo o parcial según implementación).
 
 - DELETE /api/clientes/{id}
-  - Realiza eliminación lógica: establece `estado = INACTIVO`.
+   - Realiza eliminación física: elimina el cliente de la BD completamente.
+   - Devuelve `204 No Content` si la operación fue exitosa.
 
 14. Ejemplos JSON para Postman
 -----------------------------
@@ -180,8 +181,8 @@ El controlador `ClienteController` expone los siguientes endpoints REST (rutas b
 }
 ```
 
-Respuesta esperada: `201 Created` con JSON equivalente a `ClienteResponse` incluyendo `id`,
-`fechaRegistro` y `estado`.
+Respuesta esperada: `201 Created` con JSON equivalente a `ClienteResponse` incluyendo `id` y
+`fechaRegistro` (asignados automáticamente por el servidor).
 
 15. Cómo revisar datos en H2
 ---------------------------
@@ -196,8 +197,9 @@ Tabla relevante (nombres según mapeo JPA):
 Ejemplos de consultas SQL en la consola H2:
 
 ```sql
-SELECT * FROM CLIENTES WHERE ESTADO = 'ACTIVO';
+SELECT * FROM CLIENTES;
 SELECT * FROM CLIENTES WHERE RUT = '12345678-9';
+SELECT * FROM CLIENTES WHERE NOMBRE LIKE '%Juan%';
 ```
 
 16. Próximos pasos (mejoras y evolución)

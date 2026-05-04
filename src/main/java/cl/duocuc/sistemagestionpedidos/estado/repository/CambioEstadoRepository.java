@@ -9,8 +9,8 @@ import java.util.List;
 @Repository
 public interface CambioEstadoRepository extends JpaRepository<CambioEstado, Long> {
 
-    List<CambioEstado> findByPedidoId(Long pedidoId);
+    List<CambioEstado> findByNumeroPedido(Long numeroPedido);
 
-    List<CambioEstado> findByPedidoIdOrderByFechaCambioAsc(Long pedidoId);
+    List<CambioEstado> findByNumeroPedidoOrderByFechaCambioAsc(Long numeroPedido);
 }
 

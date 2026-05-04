@@ -49,9 +49,8 @@ curl -X POST http://localhost:8080/api/clientes \
 curl -X POST http://localhost:8080/api/pedidos \
   -H "Content-Type: application/json" \
   -d '{
-    "numeroPedido": "PED-20260423-001",
     "clienteId": 1,
-    "estado": "PENDIENTE",
+    "estado": "COLA",
     "tipoDespacho": "DOMICILIO",
     "items": [
       {
@@ -73,10 +72,9 @@ curl -X POST http://localhost:8080/api/pedidos \
 **Respuesta:**
 ```json
 {
-  "id": 1,
-  "numeroPedido": "PED-20260423-001",
+  "numeroPedido": 1,
   "clienteId": 1,
-  "estado": "PENDIENTE",
+  "estado": "COLA",
   "tipoDespacho": "DOMICILIO",
   "monto": 959.97,
   "fechaCreacion": "2026-04-23T15:30:45",
@@ -118,7 +116,9 @@ curl http://localhost:8080/api/pedidos/cliente/1
 
 ### Paso 6: Actualizar estado del pedido
 ```bash
-curl -X PATCH "http://localhost:8080/api/pedidos/1/estado?estado=CONFIRMADO"
+curl -X PATCH "http://localhost:8080/api/pedidos/1/estado" \
+  -H "Content-Type: application/json" \
+  -d '{"estado":"LISTO"}'
 ```
 
 ### Paso 7: Eliminar pedido (eliminación física)
@@ -133,10 +133,9 @@ curl -X DELETE http://localhost:8080/api/pedidos/1
 ### Pedido
 ```json
 {
-  "id": 1,
-  "numeroPedido": "PED-20260423-001",
+  "numeroPedido": 1,
   "clienteId": 1,
-  "estado": "PENDIENTE",
+  "estado": "COLA",
   "tipoDespacho": "DOMICILIO",
   "monto": 959.97,
   "fechaCreacion": "2026-04-23T15:30:45",
@@ -199,14 +198,9 @@ Preparado para futura integración con cliente-service
 
 ## 🔍 Búsqueda de pedidos
 
-### Por ID
+### Por numeroPedido (identificador único)
 ```bash
 GET /api/pedidos/1
-```
-
-### Por número de pedido
-```bash
-GET /api/pedidos/numero/PED-20260423-001
 ```
 
 ### Por cliente
@@ -214,24 +208,12 @@ GET /api/pedidos/numero/PED-20260423-001
 GET /api/pedidos/cliente/1
 ```
 
-### Todos los activos
+### Todos los pedidos
 ```bash
 GET /api/pedidos
 ```
 
 ---
-
-## 🚨 Errores comunes
-
-### Error: Número de pedido duplicado
-```json
-{
-  "status": 409,
-  "message": "El número de pedido ya existe"
-}
-```
-
-**Solución:** Usa un numeroPedido único
 
 ### Error: Pedido sin items
 ```json
@@ -268,35 +250,22 @@ GET /api/pedidos
 }
 ```
 
-**Solución:** Verifica que el ID del pedido existe
-
----
-
 ## 📋 Estados válidos de Pedido
 
 ```
-PENDIENTE    → Pedido acabado de crear
-CONFIRMADO   → Pedido confirmado por cliente
-ENVIADO      → Pedido enviado para despacho
+COLA         → Pedido acabado de crear
+PRODUCCION   → Pedido en producción/procesamiento
+LISTO        → Pedido listo para despacho
+DESPACHADO   → Pedido despachado
 ENTREGADO    → Pedido entregado al cliente
-CANCELADO    → Pedido cancelado
 ```
 
 ### Cambiar estado
 ```bash
-curl -X PATCH "http://localhost:8080/api/pedidos/1/estado?estado=CONFIRMADO"
+curl -X PATCH "http://localhost:8080/api/pedidos/1/estado" \
+  -H "Content-Type: application/json" \
+  -d '{"estado":"LISTO"}'
 ```
-
----
-
-## 🗺️ Tipos de despacho válidos
-
-```
-DOMICILIO       → Entrega a domicilio del cliente
-RETIRO          → Cliente retira en sucursal
-ENVIO_COURIER   → Envío por servicio de courier
-```
-
 ---
 
 ## 🧪 Testing con Postman
@@ -339,7 +308,9 @@ ENVIO_COURIER   → Envío por servicio de courier
       "name": "PATCH - Actualizar estado",
       "request": {
         "method": "PATCH",
-        "url": {"raw": "http://localhost:8080/api/pedidos/1/estado?estado=CONFIRMADO", "protocol": "http", "host": ["localhost"], "port": ["8080"], "path": ["api", "pedidos", "1", "estado"], "query": [{"key": "estado", "value": "CONFIRMADO"}]}
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": {"raw": "http://localhost:8080/api/pedidos/1/estado", "protocol": "http", "host": ["localhost"], "port": ["8080"], "path": ["api", "pedidos", "1", "estado"]},
+        "body": {"mode": "raw", "raw": "{\"estado\": \"LISTO\"}"}
       }
     },
     {
@@ -384,4 +355,3 @@ curl http://localhost:8080/actuator/mappings
 **Versión:** 0.0.1-SNAPSHOT  
 **Última actualización:** 23 de abril de 2026  
 **Módulo:** pedido-service
-

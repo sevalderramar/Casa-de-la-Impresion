@@ -34,9 +34,9 @@ public class EstadoController {
      * GET /api/estados/pedido/{pedidoId}
      * Lista todos los cambios de estado de un pedido, ordenados por fecha.
      */
-    @GetMapping("/pedido/{pedidoId}")
-    public ResponseEntity<List<CambioEstadoResponse>> listarCambiosPorPedido(@PathVariable Long pedidoId) {
-        List<CambioEstadoResponse> cambios = estadoService.listarCambiosPorPedido(pedidoId);
+    @GetMapping("/pedido/{numeroPedido}")
+    public ResponseEntity<List<CambioEstadoResponse>> listarCambiosPorPedido(@PathVariable Long numeroPedido) {
+        List<CambioEstadoResponse> cambios = estadoService.listarCambiosPorPedido(numeroPedido);
         return ResponseEntity.ok(cambios);
     }
 
@@ -44,9 +44,9 @@ public class EstadoController {
      * GET /api/estados/pedido/{pedidoId}/ultimo
      * Obtiene el último cambio de estado de un pedido.
      */
-    @GetMapping("/pedido/{pedidoId}/ultimo")
-    public ResponseEntity<CambioEstadoResponse> obtenerUltimoEstado(@PathVariable Long pedidoId) {
-        CambioEstadoResponse ultimoEstado = estadoService.obtenerUltimoEstadoPorPedido(pedidoId);
+    @GetMapping("/pedido/{numeroPedido}/ultimo")
+    public ResponseEntity<CambioEstadoResponse> obtenerUltimoEstado(@PathVariable Long numeroPedido) {
+        CambioEstadoResponse ultimoEstado = estadoService.obtenerUltimoEstadoPorPedido(numeroPedido);
         return ResponseEntity.ok(ultimoEstado);
     }
 }

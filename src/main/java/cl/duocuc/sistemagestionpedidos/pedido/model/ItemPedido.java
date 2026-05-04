@@ -16,8 +16,7 @@ public class ItemPedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    private Long id; // es del item
     private Long productoId;
     private String nombreProducto;
     private Integer cantidad;
@@ -25,6 +24,6 @@ public class ItemPedido {
     private Double subtotal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pedido_id", nullable = false)
+    @JoinColumn(name = "numero_pedido", nullable = false)
     private Pedido pedido;
 }

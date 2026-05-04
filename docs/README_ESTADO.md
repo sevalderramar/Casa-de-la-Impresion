@@ -36,9 +36,9 @@ Este enfoque permite que:
 - Se implemente expiration policies o archivado a largo plazo.
 - Otros servicios se suscriban a eventos de cambio de estado futuros.
 
-## 4. Por qué se usa `pedidoId` en lugar de relación directa con Pedido
+## 4. Por qué se usa `numeroPedido` en lugar de relación directa con `Pedido`
 
-Actualmente, el módulo `estado` utiliza `pedidoId` (Long) en lugar de crear una relación JPA directa con la entidad `Pedido`:
+Actualmente, el módulo `estado` utiliza `numeroPedido` (Long) en lugar de crear una relación JPA directa con la entidad `Pedido`:
 
 **Razones:**
 
@@ -57,7 +57,7 @@ Actualmente, el módulo `estado` utiliza `pedidoId` (Long) en lugar de crear una
 ```sql
 CREATE TABLE cambios_estado (
     id IDENTITY PRIMARY KEY,
-    pedido_id BIGINT NOT NULL,
+    numero_pedido BIGINT NOT NULL,
     estado_anterior VARCHAR(50),
     estado_nuevo VARCHAR(50) NOT NULL,
     fecha_cambio TIMESTAMP NOT NULL,
@@ -70,19 +70,18 @@ CREATE TABLE cambios_estado (
 | Atributo | Tipo | Nullable | Descripción |
 |----------|------|----------|-------------|
 | `id` | Long | ❌ | Identificador único, auto-generado. |
-| `pedidoId` | Long | ❌ | ID del pedido asociado (sin FK, referencia lógica). |
+| `numeroPedido` | Long | ❌ | Identificador del pedido asociado (sin FK, referencia lógica). |
 | `estadoAnterior` | String | ✅ | Estado previo (null si es el primer estado). |
 | `estadoNuevo` | String | ❌ | Nuevo estado asignado. |
 | `fechaCambio` | LocalDateTime | ❌ | Timestamp del cambio (asignado automáticamente con `LocalDateTime.now()`). |
 | `observacion` | String | ✅ | Razón del cambio o comentario adicional (máx 500 caracteres). |
 
 **Valores permitidos para `estadoAnterior` y `estadoNuevo`:**
-- `PENDIENTE`
-- `PROCESANDO`
+- `COLA`
+- `PRODUCCION`
 - `LISTO`
 - `DESPACHADO`
 - `ENTREGADO`
-- `CANCELADO`
 
 ## 6. DTOs
 
@@ -92,8 +91,8 @@ DTO utilizado para crear un nuevo cambio de estado.
 
 ```java
 public class CambioEstadoRequest {
-    @NotNull(message = "pedidoId es obligatorio")
-    private Long pedidoId;
+    @NotNull(message = "numeroPedido es obligatorio")
+    private Long numeroPedido;
 
     private String estadoAnterior;  // nullable
 
@@ -105,7 +104,7 @@ public class CambioEstadoRequest {
 ```
 
 **Validaciones aplicadas:**
-- `pedidoId`: obligatorio, no nulo.
+- `numeroPedido`: obligatorio, no nulo.
 - `estadoNuevo`: obligatorio, no vacío.
 - `estadoAnterior`: opcional.
 - `observacion`: opcional.
@@ -117,7 +116,7 @@ DTO devuelto tras crear un cambio de estado.
 ```java
 public class CambioEstadoResponse {
     private Long id;
-    private Long pedidoId;
+    private Long numeroPedido;
     private String estadoAnterior;
     private String estadoNuevo;
     private LocalDateTime fechaCambio;
@@ -134,9 +133,9 @@ Interfaz que extiende `JpaRepository<CambioEstado, Long>`.
 ```java
 public interface CambioEstadoRepository extends JpaRepository<CambioEstado, Long> {
 
-    List<CambioEstado> findByPedidoId(Long pedidoId);
+    List<CambioEstado> findByNumeroPedido(Long numeroPedido);
 
-    List<CambioEstado> findByPedidoIdOrderByFechaCambioAsc(Long pedidoId);
+    List<CambioEstado> findByNumeroPedidoOrderByFechaCambioAsc(Long numeroPedido);
 }
 ```
 
@@ -144,8 +143,8 @@ public interface CambioEstadoRepository extends JpaRepository<CambioEstado, Long
 
 | Método | Retorno | Descripción |
 |--------|---------|-------------|
-| `findByPedidoId(Long pedidoId)` | `List<CambioEstado>` | Retorna todos los cambios de un pedido (sin ordenar). |
-| `findByPedidoIdOrderByFechaCambioAsc(Long pedidoId)` | `List<CambioEstado>` | Retorna todos los cambios de un pedido ordenados por fecha ascendente (más antiguo primero). |
+| `findByNumeroPedido(Long numeroPedido)` | `List<CambioEstado>` | Retorna todos los cambios de un pedido (sin ordenar). |
+| `findByNumeroPedidoOrderByFechaCambioAsc(Long numeroPedido)` | `List<CambioEstado>` | Retorna todos los cambios de un pedido ordenados por fecha ascendente (más antiguo primero). |
 
 ## 8. Service
 
@@ -159,9 +158,9 @@ public class EstadoService {
     
     public CambioEstadoResponse registrarCambioEstado(CambioEstadoRequest request);
     
-    public List<CambioEstadoResponse> listarCambiosPorPedido(Long pedidoId);
+    public List<CambioEstadoResponse> listarCambiosPorPedido(Long numeroPedido);
     
-    public CambioEstadoResponse obtenerUltimoEstadoPorPedido(Long pedidoId);
+    public CambioEstadoResponse obtenerUltimoEstadoPorPedido(Long numeroPedido);
 }
 ```
 
@@ -172,14 +171,14 @@ public class EstadoService {
 - **Entrada**: DTO con los datos del cambio.
 - **Salida**: `CambioEstadoResponse` con el registro creado, incluyendo ID y timestamp.
 - **Lógica**:
-  - Valida que `pedidoId` y `estadoNuevo` no sean nulos/vacíos.
+  - Valida que `numeroPedido` y `estadoNuevo` no sean nulos/vacíos.
   - Asigna automáticamente `fechaCambio = LocalDateTime.now()`.
   - Persiste el registro en BD.
   - Retorna el DTO response.
 
-#### `listarCambiosPorPedido(Long pedidoId)`
+#### `listarCambiosPorPedido(Long numeroPedido)`
 - **Descripción**: lista todos los cambios de estado de un pedido.
-- **Entrada**: ID del pedido.
+- **Entrada**: `numeroPedido` del pedido.
 - **Salida**: `List<CambioEstadoResponse>` ordenada por fecha ascendente.
 - **Lógica**:
   - Consulta el repositorio con ordenamiento por `fechaCambio ASC`.
@@ -187,9 +186,9 @@ public class EstadoService {
   - Mapea cada entidad a DTO.
   - Retorna la lista.
 
-#### `obtenerUltimoEstadoPorPedido(Long pedidoId)`
+#### `obtenerUltimoEstadoPorPedido(Long numeroPedido)`
 - **Descripción**: obtiene el último cambio de estado de un pedido.
-- **Entrada**: ID del pedido.
+- **Entrada**: `numeroPedido` del pedido.
 - **Salida**: `CambioEstadoResponse` del último cambio.
 - **Lógica**:
   - Consulta todos los cambios ordenados por fecha.
@@ -217,13 +216,13 @@ public class EstadoController {
     public ResponseEntity<CambioEstadoResponse> crearCambioEstado(
         @Valid @RequestBody CambioEstadoRequest request);
     
-    @GetMapping("/pedido/{pedidoId}")
+    @GetMapping("/pedido/{numeroPedido}")
     public ResponseEntity<List<CambioEstadoResponse>> listarCambiosPorPedido(
-        @PathVariable Long pedidoId);
+        @PathVariable Long numeroPedido);
     
-    @GetMapping("/pedido/{pedidoId}/ultimo")
+    @GetMapping("/pedido/{numeroPedido}/ultimo")
     public ResponseEntity<CambioEstadoResponse> obtenerUltimoEstado(
-        @PathVariable Long pedidoId);
+        @PathVariable Long numeroPedido);
 }
 ```
 
@@ -242,9 +241,9 @@ POST /api/estados
 Content-Type: application/json
 
 {
-  "pedidoId": 1,
-  "estadoAnterior": "PENDIENTE",
-  "estadoNuevo": "PROCESANDO",
+  "numeroPedido": 1,
+  "estadoAnterior": null,
+  "estadoNuevo": "COLA",
   "observacion": "Pedido iniciado en el almacén"
 }
 ```
@@ -253,9 +252,9 @@ Content-Type: application/json
 ```json
 {
   "id": 1,
-  "pedidoId": 1,
-  "estadoAnterior": "PENDIENTE",
-  "estadoNuevo": "PROCESANDO",
+  "numeroPedido": 1,
+  "estadoAnterior": "COLA",
+  "estadoNuevo": "PRODUCCION",
   "fechaCambio": "2026-04-29T10:15:30",
   "observacion": "Pedido iniciado en el almacén"
 }
@@ -278,24 +277,24 @@ GET /api/estados/pedido/1
 [
   {
     "id": 1,
-    "pedidoId": 1,
+    "numeroPedido": 1,
     "estadoAnterior": null,
-    "estadoNuevo": "PENDIENTE",
+    "estadoNuevo": "COLA",
     "fechaCambio": "2026-04-29T09:00:00",
     "observacion": null
   },
   {
     "id": 2,
-    "pedidoId": 1,
-    "estadoAnterior": "PENDIENTE",
-    "estadoNuevo": "PROCESANDO",
+    "numeroPedido": 1,
+    "estadoAnterior": "COLA",
+    "estadoNuevo": "PRODUCCION",
     "fechaCambio": "2026-04-29T10:15:30",
     "observacion": "Pedido iniciado en el almacén"
   },
   {
     "id": 3,
-    "pedidoId": 1,
-    "estadoAnterior": "PROCESANDO",
+    "numeroPedido": 1,
+    "estadoAnterior": "PRODUCCION",
     "estadoNuevo": "LISTO",
     "fechaCambio": "2026-04-29T11:45:00",
     "observacion": "Pedido empaquetado"
@@ -318,8 +317,8 @@ GET /api/estados/pedido/1/ultimo
 ```json
 {
   "id": 3,
-  "pedidoId": 1,
-  "estadoAnterior": "PROCESANDO",
+  "numeroPedido": 1,
+  "estadoAnterior": "PRODUCCION",
   "estadoNuevo": "LISTO",
   "fechaCambio": "2026-04-29T11:45:00",
   "observacion": "Pedido empaquetado"
@@ -327,7 +326,7 @@ GET /api/estados/pedido/1/ultimo
 ```
 
 **Errores:**
-- `404 Not Found`: no existen cambios para ese `pedidoId`.
+- `404 Not Found`: no existen cambios para ese `numeroPedido`.
 
 ## 11. Ejemplos JSON para Postman
 
@@ -341,9 +340,9 @@ POST http://localhost:8080/api/estados
 Content-Type: application/json
 
 {
-  "pedidoId": 1,
+  "numeroPedido": 1,
   "estadoAnterior": null,
-  "estadoNuevo": "PENDIENTE",
+  "estadoNuevo": "COLA",
   "observacion": null
 }
 ```
@@ -352,9 +351,9 @@ Content-Type: application/json
 ```json
 {
   "id": 1,
-  "pedidoId": 1,
+  "numeroPedido": 1,
   "estadoAnterior": null,
-  "estadoNuevo": "PENDIENTE",
+  "estadoNuevo": "COLA",
   "fechaCambio": "2026-04-29T09:00:00.123",
   "observacion": null
 }
@@ -362,7 +361,7 @@ Content-Type: application/json
 
 ---
 
-#### 2. Registrar cambio: de PENDIENTE a PROCESANDO
+#### 2. Registrar cambio: de COLA a PRODUCCION
 
 **Request:**
 ```http
@@ -370,9 +369,9 @@ POST http://localhost:8080/api/estados
 Content-Type: application/json
 
 {
-  "pedidoId": 1,
-  "estadoAnterior": "PENDIENTE",
-  "estadoNuevo": "PROCESANDO",
+  "numeroPedido": 1,
+  "estadoAnterior": "COLA",
+  "estadoNuevo": "PRODUCCION",
   "observacion": "Personal de almacén inicia procesamiento"
 }
 ```
@@ -381,9 +380,9 @@ Content-Type: application/json
 ```json
 {
   "id": 2,
-  "pedidoId": 1,
-  "estadoAnterior": "PENDIENTE",
-  "estadoNuevo": "PROCESANDO",
+  "numeroPedido": 1,
+  "estadoAnterior": "COLA",
+  "estadoNuevo": "PRODUCCION",
   "fechaCambio": "2026-04-29T10:30:00.456",
   "observacion": "Personal de almacén inicia procesamiento"
 }
@@ -391,7 +390,7 @@ Content-Type: application/json
 
 ---
 
-#### 3. Registrar cambio: de PROCESANDO a LISTO
+#### 3. Registrar cambio: de PRODUCCION a LISTO
 
 **Request:**
 ```http
@@ -399,8 +398,8 @@ POST http://localhost:8080/api/estados
 Content-Type: application/json
 
 {
-  "pedidoId": 1,
-  "estadoAnterior": "PROCESANDO",
+  "numeroPedido": 1,
+  "estadoAnterior": "PRODUCCION",
   "estadoNuevo": "LISTO",
   "observacion": "Pedido empaquetado y etiquetado para envío"
 }
@@ -410,8 +409,8 @@ Content-Type: application/json
 ```json
 {
   "id": 3,
-  "pedidoId": 1,
-  "estadoAnterior": "PROCESANDO",
+  "numeroPedido": 1,
+  "estadoAnterior": "PRODUCCION",
   "estadoNuevo": "LISTO",
   "fechaCambio": "2026-04-29T12:00:00.789",
   "observacion": "Pedido empaquetado y etiquetado para envío"
@@ -434,22 +433,22 @@ GET http://localhost:8080/api/estados/pedido/1
     "id": 1,
     "pedidoId": 1,
     "estadoAnterior": null,
-    "estadoNuevo": "PENDIENTE",
+    "estadoNuevo": "COLA",
     "fechaCambio": "2026-04-29T09:00:00.123",
     "observacion": null
   },
   {
     "id": 2,
     "pedidoId": 1,
-    "estadoAnterior": "PENDIENTE",
-    "estadoNuevo": "PROCESANDO",
+    "estadoAnterior": "COLA",
+    "estadoNuevo": "PRODUCCION",
     "fechaCambio": "2026-04-29T10:30:00.456",
     "observacion": "Personal de almacén inicia procesamiento"
   },
   {
     "id": 3,
     "pedidoId": 1,
-    "estadoAnterior": "PROCESANDO",
+    "estadoAnterior": "PRODUCCION",
     "estadoNuevo": "LISTO",
     "fechaCambio": "2026-04-29T12:00:00.789",
     "observacion": "Pedido empaquetado y etiquetado para envío"
@@ -471,7 +470,7 @@ GET http://localhost:8080/api/estados/pedido/1/ultimo
 {
   "id": 3,
   "pedidoId": 1,
-  "estadoAnterior": "PROCESANDO",
+  "estadoAnterior": "COLA",
   "estadoNuevo": "LISTO",
   "fechaCambio": "2026-04-29T12:00:00.789",
   "observacion": "Pedido empaquetado y etiquetado para envío"
@@ -488,8 +487,8 @@ POST http://localhost:8080/api/estados
 Content-Type: application/json
 
 {
-  "estadoAnterior": "PENDIENTE",
-  "estadoNuevo": "PROCESANDO",
+  "estadoAnterior": "COLA",
+  "estadoNuevo": "PRODUCCION",
   "observacion": "Intentando sin pedidoId"
 }
 ```
@@ -502,7 +501,7 @@ Content-Type: application/json
   "error": "Bad Request",
   "message": "Validation failed",
   "details": [
-    "pedidoId es obligatorio"
+    "numeroPedido es obligatorio"
   ]
 }
 ```
@@ -517,8 +516,8 @@ POST http://localhost:8080/api/estados
 Content-Type: application/json
 
 {
-  "pedidoId": 1,
-  "estadoAnterior": "PENDIENTE",
+  "numeroPedido": 1,
+  "estadoAnterior": "COLA",
   "estadoNuevo": "",
   "observacion": "Estado vacío"
 }
@@ -552,73 +551,54 @@ GET http://localhost:8080/api/estados/pedido/999
   "timestamp": "2026-04-29T14:35:00.000Z",
   "status": 404,
   "error": "Not Found",
-  "message": "No se encontraron cambios de estado para el pedido con ID: 999"
+  "message": "No se encontraron cambios de estado para el pedido con numeroPedido: 999"
 }
 ```
 
-## 12. Flujo futuro con `pedido-service`
+## 12. Integración actual con `pedido-service`
 
-### Integración propuesta
+### Flujo actual
 
-En una etapa futura, cuando `PedidoService` sea actualizado, se seguirá este flujo:
+El módulo de pedidos registra los cambios de estado usando `numeroPedido`. El flujo actual es:
 
-1. **En `PedidoService.actualizarEstado(Long pedidoId, String nuevoEstado)`:**
-   ```java
-   // 1. Validar que el pedido exista
-   Pedido pedido = pedidoRepository.findById(pedidoId)
-       .orElseThrow(() -> new ResourceNotFoundException(...));
-   
-   // 2. Registrar el cambio en el módulo estado
-   CambioEstadoRequest cambio = new CambioEstadoRequest();
-   cambio.setPedidoId(pedidoId);
-   cambio.setEstadoAnterior(pedido.getEstado());
-   cambio.setEstadoNuevo(nuevoEstado);
-   cambio.setObservacion("Cambio de estado automático desde pedido-service");
-   
-   // 3. Llamar a EstadoService
-   estadoService.registrarCambioEstado(cambio);
-   
-   // 4. Actualizar el estado en el pedido
-   pedido.setEstado(nuevoEstado);
-   pedidoRepository.save(pedido);
-   
-   // 5. (Futuro) Publicar evento de dominio
-   // eventPublisher.publishEvent(new PedidoEstadoCambiadoEvent(...))
-   ```
+1. **En `PedidoService.actualizarEstado(Long numeroPedido, EstadoRequest request)`:**
+   - Validar que el pedido exista con `pedidoRepository.findById(numeroPedido)`.
+   - Crear un `CambioEstadoRequest` con `numeroPedido`, `estadoAnterior`, `estadoNuevo` y `observacion`.
+   - Registrar el cambio mediante `estadoService.registrarCambioEstado(cambio)`.
+   - Actualizar `Pedido.estado` y persistir el pedido.
+   - Mantener abierto el punto de extensión para eventos de dominio futuros.
 
 2. **Ventajas de esta integración:**
-   - La fuente de verdad del estado actual está en `Pedido`.
-   - El historial auditado está en `CambioEstado`.
-   - Se pueden consultar transiciones de estado sin afectar la tabla de pedidos.
-   - Permite implementar políticas de replicación async.
+- La fuente de verdad del estado actual está en `Pedido`.
+- El historial auditado está en `CambioEstado`.
+- Se pueden consultar transiciones de estado sin afectar la tabla de pedidos.
+- Permite implementar políticas de replicación async.
 
 3. **Sin acoplamiento JPA:**
-   - Siempre se usa inyección de dependencias para acceder a `EstadoService`.
-   - La lógica de auditoría es transparente para el cliente.
+- Siempre se usa inyección de dependencias para acceder a `EstadoService`.
+- La lógica de auditoría es transparente para el cliente.
 
-### Ejemplo endpoint PATCH futuro
+### Ejemplo endpoint PATCH actual
 
 ```http
 PATCH http://localhost:8080/api/pedidos/1/estado
 Content-Type: application/json
 
 {
-  "nuevoEstado": "PROCESANDO",
-  "observacion": "Cambio iniciado por usuario 'admin'"
+  "estado": "PRODUCCION"
 }
 ```
 
 **Respuesta (200):**
 ```json
 {
-  "id": 1,
-  "numeroPedido": "PED-001",
+  "numeroPedido": 1,
   "clienteId": 1,
-  "estado": "PROCESANDO",
+  "estado": "PRODUCCION",
   "tipoDespacho": "RETIRO",
   "monto": 25000.00,
   "fechaCreacion": "2026-04-29T09:00:00",
-  "items": [...]
+  "items": []
 }
 ```
 
@@ -653,11 +633,11 @@ SELECT * FROM cambios_estado;
 
 **Resultado esperado:**
 ```
-ID | PEDIDO_ID | ESTADO_ANTERIOR | ESTADO_NUEVO | FECHA_CAMBIO              | OBSERVACION
----+-----------+-----------------+--------------+---------------------------+----------------------------------------
-1  | 1         | NULL            | PENDIENTE    | 2026-04-29 09:00:00.123  | NULL
-2  | 1         | PENDIENTE       | PROCESANDO   | 2026-04-29 10:30:00.456  | Personal de almacén...
-3  | 1         | PROCESANDO      | LISTO        | 2026-04-29 12:00:00.789  | Pedido empaquetado...
+ID | NUMERO_PEDIDO | ESTADO_ANTERIOR | ESTADO_NUEVO | FECHA_CAMBIO              | OBSERVACION
+---+---------------+-----------------+--------------+---------------------------+----------------------------------------
+1  | 1             | NULL            | COLA         | 2026-04-29 09:00:00.123  | NULL
+2  | 1             | COLA            | PRODUCCION   | 2026-04-29 10:30:00.456  | Personal de almacén...
+3  | 1             | PRODUCCION      | LISTO        | 2026-04-29 12:00:00.789  | Pedido empaquetado...
 ```
 
 ### 3. Consultas útiles
@@ -667,34 +647,34 @@ ID | PEDIDO_ID | ESTADO_ANTERIOR | ESTADO_NUEVO | FECHA_CAMBIO              | OB
 ```sql
 SELECT 
     cm.id,
-    cm.pedido_id,
+    cm.numero_pedido,
     cm.estado_anterior,
     cm.estado_nuevo,
     cm.fecha_cambio,
     cm.observacion
 FROM cambios_estado cm
-WHERE (cm.pedido_id, cm.fecha_cambio) IN (
-    SELECT pedido_id, MAX(fecha_cambio)
+WHERE (cm.numero_pedido, cm.fecha_cambio) IN (
+    SELECT numero_pedido, MAX(fecha_cambio)
     FROM cambios_estado
-    GROUP BY pedido_id
+    GROUP BY numero_pedido
 )
-ORDER BY cm.pedido_id;
+ORDER BY cm.numero_pedido;
 ```
 
 #### Ver el historial de transiciones de un pedido específico
 
 ```sql
 SELECT * FROM cambios_estado
-WHERE pedido_id = 1
+WHERE numero_pedido = 1
 ORDER BY fecha_cambio ASC;
 ```
 
 #### Contar cambios de estado por pedido
 
 ```sql
-SELECT pedido_id, COUNT(*) as total_cambios
+SELECT numero_pedido, COUNT(*) as total_cambios
 FROM cambios_estado
-GROUP BY pedido_id
+GROUP BY numero_pedido
 ORDER BY total_cambios DESC;
 ```
 
@@ -721,14 +701,13 @@ ORDER BY total_transiciones DESC;
 
 ### Corto plazo (1-2 sprints)
 
-1. **Integración con `PedidoService`:**
-   - Inyectar `EstadoService` en `PedidoService`.
-   - Al actualizar estado en `PATCH /api/pedidos/{id}/estado`, registrar automáticamente un `CambioEstado`.
-   - Agregar tests unitarios para validar la integración.
+1. **Tests de integración:**
+   - Validar que `PATCH /api/pedidos/{numeroPedido}/estado` registre automáticamente un `CambioEstado`.
+   - Agregar tests unitarios e integración para el historial.
 
 2. **Enums de estado:**
-   - Crear `enum EstadoPedido { PENDIENTE, PROCESANDO, LISTO, DESPACHADO, ENTREGADO, CANCELADO }`.
-   - Validar contra este enum en `CambioEstadoService`.
+   - Crear `enum EstadoPedido { COLA, PRODUCCION, LISTO, DESPACHADO, ENTREGADO, CANCELADO }`.
+   - Validar contra este enum en `EstadoService`.
    - Sincronizar con la documentación.
 
 3. **Tests unitarios e integración:**

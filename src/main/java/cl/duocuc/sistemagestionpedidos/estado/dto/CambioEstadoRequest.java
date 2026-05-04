@@ -13,8 +13,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CambioEstadoRequest {
 
-    @NotNull(message = "pedidoId es obligatorio")
-    private Long pedidoId;
+    @NotNull(message = "numeroPedido es obligatorio")
+    private Long numeroPedido;
 
     private String estadoAnterior;
 

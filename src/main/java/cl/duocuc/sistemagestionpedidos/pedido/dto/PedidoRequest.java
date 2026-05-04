@@ -16,9 +16,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class PedidoRequest {
 
-    @NotBlank(message = "El numero de pedido es obligatorio")
-    private String numeroPedido;
-
     @NotNull(message = "El clienteId es obligatorio")
     private Long clienteId;
 

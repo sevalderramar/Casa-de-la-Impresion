@@ -25,7 +25,7 @@ public class EstadoService {
      */
     public CambioEstadoResponse registrarCambioEstado(CambioEstadoRequest request) {
         CambioEstado cambio = new CambioEstado();
-        cambio.setPedidoId(request.getPedidoId());
+        cambio.setNumeroPedido(request.getNumeroPedido());
         cambio.setEstadoAnterior(request.getEstadoAnterior());
         cambio.setEstadoNuevo(request.getEstadoNuevo());
         cambio.setObservacion(request.getObservacion());
@@ -38,11 +38,11 @@ public class EstadoService {
     /**
      * Lista todos los cambios de estado de un pedido, ordenados por fecha ascendente.
      */
-    public List<CambioEstadoResponse> listarCambiosPorPedido(Long pedidoId) {
-        List<CambioEstado> cambios = cambioEstadoRepository.findByPedidoIdOrderByFechaCambioAsc(pedidoId);
+    public List<CambioEstadoResponse> listarCambiosPorPedido(Long numeroPedido) {
+        List<CambioEstado> cambios = cambioEstadoRepository.findByNumeroPedidoOrderByFechaCambioAsc(numeroPedido);
 
         if (cambios.isEmpty()) {
-            throw new ResourceNotFoundException("No se encontraron cambios de estado para el pedido con ID: " + pedidoId);
+            throw new ResourceNotFoundException("No se encontraron cambios de estado para el pedido con numero: " + numeroPedido);
         }
 
         return cambios.stream()
@@ -53,14 +53,14 @@ public class EstadoService {
     /**
      * Obtiene el último cambio de estado de un pedido.
      */
-    public CambioEstadoResponse obtenerUltimoEstadoPorPedido(Long pedidoId) {
-        List<CambioEstado> cambios = cambioEstadoRepository.findByPedidoIdOrderByFechaCambioAsc(pedidoId);
+    public CambioEstadoResponse obtenerUltimoEstadoPorPedido(Long numeroPedido) {
+        List<CambioEstado> cambios = cambioEstadoRepository.findByNumeroPedidoOrderByFechaCambioAsc(numeroPedido);
 
         if (cambios.isEmpty()) {
-            throw new ResourceNotFoundException("No se encontraron cambios de estado para el pedido con ID: " + pedidoId);
+            throw new ResourceNotFoundException("No se encontraron cambios de estado para el pedido con numero: " + numeroPedido);
         }
 
-        CambioEstado ultimoCambio = cambios.getLast();
+        CambioEstado ultimoCambio = cambios.get(cambios.size() - 1);
         return mapearAResponse(ultimoCambio);
     }
 
@@ -70,7 +70,7 @@ public class EstadoService {
     private CambioEstadoResponse mapearAResponse(CambioEstado cambio) {
         return new CambioEstadoResponse(
                 cambio.getId(),
-                cambio.getPedidoId(),
+                cambio.getNumeroPedido(),
                 cambio.getEstadoAnterior(),
                 cambio.getEstadoNuevo(),
                 cambio.getFechaCambio(),

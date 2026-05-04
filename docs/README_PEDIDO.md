@@ -10,9 +10,9 @@ su objetivo, estructura, entidades, reglas de negocio y endpoints REST.
 -----------------------------
 
  El módulo `pedido` gestiona la creación, consulta, actualización y eliminación física de pedidos y sus
-ítems asociados. Proporciona una API REST para operar sobre pedidos dentro de la aplicación monolítica
-modular. Está diseñado para soportar una futura separación a microservicios sin acoplarse directamente
-a otras áreas del dominio.
+ ítems asociados. Proporciona una API REST para operar sobre pedidos dentro de la aplicación monolítica
+ modular. Está diseñado para soportar una futura separación a microservicios sin acoplarse directamente
+ a otras áreas del dominio.
 
 2. Qué problema resuelve
 ------------------------
@@ -45,9 +45,9 @@ Nota: los nombres de clase citados corresponden a los archivos presentes en el p
 - `dto/PedidoResponse.java`: DTO devuelto en las respuestas con los datos de un pedido (incluye items).
 - `dto/ItemPedidoRequest.java`: DTO para representar un ítem enviado al crear/actualizar un pedido.
 - `dto/ItemPedidoResponse.java`: DTO devuelto en respuestas que representan un ítem de pedido.
- - `model/Pedido.java`: entidad JPA que representa la tabla de pedidos. Contiene atributos como
-   `numeroPedido`, `clienteId`, `monto`, `items`, etc. Importante: este modelo ya no contiene campos
-   relacionados con eliminación lógica (por ejemplo `estadoRegistro`).
+  - `model/Pedido.java`: entidad JPA que representa la tabla de pedidos. Contiene atributos como
+    `numeroPedido`, `clienteId`, `monto`, `items`, etc. Importante: este modelo ya no contiene campos
+    relacionados con eliminación lógica.
 - `model/ItemPedido.java`: entidad JPA que representa los ítems de un pedido (relación con `Pedido`).
 - `repository/PedidoRepository.java`: interfaz Spring Data para consultas y persistencia de `Pedido`.
 - `repository/ItemPedidoRepository.java` (si existe): interfaz para persistencia de `ItemPedido`.
@@ -59,10 +59,9 @@ Nota: los nombres de clase citados corresponden a los archivos presentes en el p
 
 La entidad `Pedido` representa la cabecera de un pedido y contiene los siguientes atributos clave:
 
-- `id` (Long): identificador único interno (clave primaria).
-- `numeroPedido` (String): código único del pedido (ej. "PED-001"). Debe ser único en el sistema.
-- `clienteId` (Long): referencia al cliente asociada al pedido (no es una relación JPA hacia `Cliente`).
-- `estado` (String / Enum): estado operativo del pedido (por ejemplo: `PENDIENTE`, `EN_PROCESO`, `LISTO`).
+ - `numeroPedido` (Long): identificador único del pedido generado por la base de datos (PK).
+ - `clienteId` (Long): referencia al cliente asociada al pedido (no es una relación JPA hacia `Cliente`).
+ - `estado` (String / Enum): estado operativo del pedido (por ejemplo: `COLA`, `PRODUCCION`, `LISTO`, `DESPACHADO`, `ENTREGADO`).
 - `tipoDespacho` (String / Enum): tipo de despacho (ej. `RETIRO`, `DOMICILIO`).
 - `monto` (BigDecimal / Double): suma total de los subtotales de los ítems del pedido.
 - `fechaCreacion` (LocalDateTime / Date): marca temporal de creación del pedido.
@@ -139,13 +138,13 @@ Esta decisión se adoptó para alinear el modelo de datos con el flujo operacion
 
 - `PedidoRequest`:
   - Representa la carga que el cliente HTTP envía para crear o actualizar un pedido.
-  - Campos típicos: `numeroPedido`, `clienteId`, `estado`, `tipoDespacho`, `items` (lista de
-    `ItemPedidoRequest`).
-  - No incluye campos calculados (`monto`, `fechaCreacion`) que son gestionados por el servidor.
+  - Campos típicos: `clienteId`, `estado`, `tipoDespacho`, `items` (lista de `ItemPedidoRequest`).
+   - `numeroPedido` no se envía en la creación: es generado automáticamente por la base de datos y devuelto en `PedidoResponse`.
+   - No incluye campos calculados (`monto`, `fechaCreacion`) que son gestionados por el servidor.
 
- - `PedidoResponse`:
+- `PedidoResponse`:
    - Representa la respuesta devuelta al consumidor con todos los datos del pedido.
-   - Incluye `id`, `numeroPedido`, `clienteId`, `estado`, `tipoDespacho`, `monto`, `fechaCreacion` e `items` (lista de `ItemPedidoResponse`).
+   - Incluye `numeroPedido` (identificador único, clave primaria generada por la base de datos), `clienteId`, `estado`, `tipoDespacho`, `monto`, `fechaCreacion` e `items` (lista de `ItemPedidoResponse`).
 
 - `ItemPedidoRequest`:
   - Subconjunto de datos para crear/actualizar un ítem: `productoId`, `nombreProducto`, `cantidad`,
@@ -162,8 +161,7 @@ El `PedidoRepository` (y `ItemPedidoRepository` si está presente) son interface
 Data (por ejemplo `JpaRepository<Pedido, Long>`). Proveen:
 
 - Operaciones CRUD estándar.
-- Consultas derivadas por nombre (por ejemplo `findByNumeroPedidoAndEstadoRegistro` o
-  `findByClienteIdAndEstadoRegistro`).
+- Consultas derivadas por nombre.
 - Posible paginación y ordenamiento para listados (`findAll(Pageable)`).
 
 14. Service y reglas de negocio
@@ -171,8 +169,7 @@ Data (por ejemplo `JpaRepository<Pedido, Long>`). Proveen:
 
 El `PedidoService` centraliza las reglas de negocio. Principales responsabilidades y validaciones:
 
-- Verificar que `numeroPedido` sea único al crear un nuevo pedido. Si existe un `numeroPedido`
-  activo conflictivo, lanzar una excepción (por ejemplo `ConflictException`).
+- El `numeroPedido` es generado automáticamente por la base de datos (clave primaria, autoincremental).
 - Validar que el pedido tenga al menos un item; si no, lanzar excepción.
 - Validar que cada `cantidad` sea un entero positivo (> 0).
 - Validar que cada `precioUnitario` sea positivo (> 0).
@@ -180,7 +177,7 @@ El `PedidoService` centraliza las reglas de negocio. Principales responsabilidad
 - Asignar `fechaCreacion` al crear (si procede).
 - Soportar actualización parcial del `estado` mediante un endpoint PATCH; validar estados
   permitidos y transiciones si aplica.
- - Implementar eliminación física: los `DELETE` eliminan el pedido y sus ítems asociados.
+- Implementar eliminación física: los `DELETE` eliminan el pedido y sus ítems asociados.
 
 15. Controller y endpoints
 --------------------------
@@ -193,10 +190,10 @@ El controlador `PedidoController` expone los siguientes endpoints REST (rutas ba
   - Valida reglas de negocio y devuelve `201 Created` con `PedidoResponse`.
 
 - GET /api/pedidos
-  - Lista pedidos (por defecto `estadoRegistro = ACTIVO`). Soporta paginación y filtros simples.
+  - Lista pedidos.
 
-- GET /api/pedidos/{id}
-  - Obtiene un pedido por su `id` y devuelve `PedidoResponse`.
+ - GET /api/pedidos/{numeroPedido}
+  - Obtiene un pedido por su `numeroPedido` (identificador único generado) y devuelve `PedidoResponse`.
 
 - GET /api/pedidos/numero/{numeroPedido}
   - Busca un pedido por su `numeroPedido`.
@@ -204,12 +201,25 @@ El controlador `PedidoController` expone los siguientes endpoints REST (rutas ba
 - GET /api/pedidos/cliente/{clienteId}
   - Retorna pedidos asociados a un `clienteId`.
 
-- PATCH /api/pedidos/{id}/estado?estado=VALOR
-  - Actualiza el `estado` operativo del pedido (por ejemplo a `LISTO`).
-  - Valida la transición si existen reglas y persiste el cambio.
+ - PATCH /api/pedidos/{numeroPedido}/estado
+  - Actualiza el `estado` operativo del pedido. Ahora este endpoint recibe un cuerpo JSON con el nuevo estado:
 
- - DELETE /api/pedidos/{id}
-   - Realiza eliminación física: borra el pedido y sus ítems asociados (`204 No Content`).
+    ```http
+    PATCH /api/pedidos/{numeroPedido}/estado
+    Content-Type: application/json
+
+    {
+      "estado": "LISTO"
+    }
+    ```
+
+  - Valida la transición si existen reglas y persiste el cambio. Además registra automáticamente un `CambioEstado` en el módulo `estado`.
+
+ - GET /api/pedidos/{numeroPedido}/historial
+  - Devuelve el historial de cambios de estado del pedido consultando el módulo `estado`.
+ 
+  - DELETE /api/pedidos/{numeroPedido}
+    - Realiza eliminación física: borra el pedido y sus ítems asociados (`204 No Content`).
 
 16. Ejemplos JSON para Postman
 -----------------------------
@@ -218,9 +228,8 @@ El controlador `PedidoController` expone los siguientes endpoints REST (rutas ba
 
 ```json
 {
-  "numeroPedido": "PED-001",
   "clienteId": 1,
-  "estado": "PENDIENTE",
+  "estado": "COLA",
   "tipoDespacho": "RETIRO",
   "items": [
     {
@@ -241,10 +250,15 @@ El controlador `PedidoController` expone los siguientes endpoints REST (rutas ba
 
 - PATCH actualizar estado (ejemplo):
 
-PATCH /api/pedidos/123/estado?estado=LISTO
+PATCH /api/pedidos/123/estado
 
-Sin cuerpo; la llamada envía el nuevo estado como parámetro de consulta. Respuesta esperada: `200 OK`
-con el `PedidoResponse` actualizado.
+Content-Type: application/json
+
+```
+{
+  "estado": "LISTO"
+}
+```
 
 17. Cómo revisar datos en H2
 ---------------------------
@@ -261,7 +275,7 @@ Ejemplo de consultas SQL en la consola H2:
 
 ```sql
 SELECT * FROM PEDIDOS;
-SELECT * FROM ITEMS_PEDIDO WHERE PEDIDO_ID = 1;
+SELECT * FROM ITEMS_PEDIDO WHERE NUMERO_PEDIDO = 1;
 ```
 
 18. Próximos pasos (mejoras y evolución)
@@ -288,4 +302,3 @@ Anexos y notas:
   API documentation (ej. OpenAPI/Swagger) para que consumidores conozcan los valores permitidos.
 
 Fin del documento.
-

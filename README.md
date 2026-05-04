@@ -12,13 +12,19 @@ cl.duocuc.sistemagestionpedidos
 │   ├── model
 │   ├── repository
 │   └── service
+├── producto
+│   ├── controller
+│   ├── dto
+│   ├── model
+│   ├── repository
+│   └── service
 ├── pedido
 │   ├── controller
 │   ├── dto
 │   ├── model
 │   ├── repository
 │   └── service
-├── producto
+├── estado
 │   ├── controller
 │   ├── dto
 │   ├── model
@@ -47,12 +53,6 @@ Gestiona los clientes del sistema.
 - comuna
 - region
 - fechaRegistro
-- estado
-
-El campo `estado` reemplaza a `activo`.
-
-- `ACTIVO`: cliente habilitado.
-- `INACTIVO`: cliente eliminado de forma lógica.
 
 ### Endpoints cliente
 
@@ -85,8 +85,7 @@ Gestiona pedidos e ítems de pedido. De momento no valida contra `cliente-servic
 
 ### Entidad Pedido
 
-- id
-- numeroPedido
+- numeroPedido (Long, PK generado)
 - clienteId
 - estado
 - tipoDespacho
@@ -108,22 +107,20 @@ Gestiona pedidos e ítems de pedido. De momento no valida contra `cliente-servic
 ```http
 POST   /api/pedidos
 GET    /api/pedidos
-GET    /api/pedidos/{id}
+GET    /api/pedidos/{numeroPedido}
 GET    /api/pedidos/numero/{numeroPedido}
 GET    /api/pedidos/cliente/{clienteId}
-PATCH  /api/pedidos/{id}/estado?estado=LISTO
-GET    /api/pedidos/filtro?estado=PENDIENTE
-GET    /api/pedidos/filtro-combinado?estado=LISTO&tipoDespacho=RETIRO
-DELETE /api/pedidos/{id}
+PATCH  /api/pedidos/{numeroPedido}/estado   (body JSON: { "estado": "LISTO" })
+GET    /api/pedidos/{numeroPedido}/historial
+DELETE /api/pedidos/{numeroPedido}
 ```
 
 ### Ejemplo POST pedido
 
 ```json
 {
-  "numeroPedido": "PED-001",
   "clienteId": 1,
-  "estado": "PENDIENTE",
+  "estado": "COLA",
   "tipoDespacho": "RETIRO",
   "items": [
     {
@@ -149,6 +146,16 @@ subtotal = cantidad * precioUnitario
 monto = suma de subtotales
 ```
 
+### Historial de estados
+
+El módulo `estado` registra la auditoría operacional de los pedidos. Los cambios de estado pueden
+consultarse desde:
+
+```http
+GET /api/pedidos/{numeroPedido}/historial
+GET /api/estados/pedido/{numeroPedido}
+```
+
 ## Módulo producto
 
 Gestiona el catálogo de productos del sistema. Se integra de forma modular dentro de la misma
@@ -162,21 +169,12 @@ aplicación Spring Boot, sin convertirse todavía en un microservicio independie
 - categoria
 - precio
 - stock
-- estado
 - fechaCreacion
-
-El campo `estado` reemplaza a `activo`.
-
-- `ACTIVO`: producto disponible en el catálogo.
-- `INACTIVO`: producto eliminado de forma lógica.
 
 ### Reglas principales
 
 - No permite productos duplicados por nombre.
 - `fechaCreacion` se asigna automáticamente.
-- `estado` se inicializa como `ACTIVO`.
-- La eliminación es lógica y cambia el estado a `INACTIVO`.
-- No conecta todavía con `pedido` mediante relaciones JPA.
 
 ### Endpoints producto
 
@@ -208,9 +206,98 @@ El módulo `pedido` seguirá usando `productoId` y `nombreProducto` como snapsho
 ítem. Esto permite conservar pedidos antiguos aunque el catálogo cambie y, a futuro, facilita separar
 `producto` en un microservicio independiente.
 
-## Base de datos H2
+## Módulo estado
 
-La aplicación usa H2 para pruebas locales.
+Gestiona el historial y auditoría de cambios de estado de los pedidos.
+
+### Qué guarda
+
+- numeroPedido
+- estadoAnterior
+- estadoNuevo
+- fechaCambio
+- observacion
+
+### Endpoints estado
+
+```http
+POST /api/estados
+GET  /api/estados/pedido/{numeroPedido}
+GET  /api/estados/pedido/{numeroPedido}/ultimo
+```
+
+### Integración con pedido
+
+El estado actual del pedido se actualiza con `PATCH /api/pedidos/{numeroPedido}/estado` usando body JSON:
+
+```json
+{
+  "estado": "LISTO"
+}
+```
+
+Además, el historial puede consultarse desde:
+
+```http
+GET /api/pedidos/{numeroPedido}/historial
+```
+
+## Configuración de Ambientes
+
+El proyecto utiliza **Spring Profiles** para gestionar diferentes configuraciones según el ambiente de ejecución.
+
+### Archivos de Configuración
+
+```text
+src/main/resources/
+├── application.properties          # Configuración base
+├── application-dev.properties      # Perfil desarrollo
+└── application-prod.properties     # Perfil producción
+```
+
+### Perfil de Desarrollo (dev)
+
+Activo por defecto. Usa H2 en memoria para pruebas rápidas.
+
+**Configuración:**
+- Base de datos: H2 en memoria (`jdbc:h2:mem:gestion_pedidos_db`)
+- Usuario: `sa`
+- Contraseña: vacía
+- Puerto: `8080`
+- JPA DDL: `update` (actualiza esquema automáticamente)
+- SQL logging: habilitado
+- Consola H2: habilitada en `/h2-console`
+
+**Para ejecutar en desarrollo:**
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
+```
+
+O simplemente (es el perfil predeterminado):
+```bash
+mvn spring-boot:run
+```
+
+### Perfil de Producción (prod)
+
+Usa MySQL para persistencia real.
+
+**Configuración:**
+- Base de datos: MySQL (`jdbc:mysql://localhost:3306/gestion_pedidos`)
+- Usuario: `root`
+- Contraseña: vacía (modificar según ambiente)
+- Puerto: `8080`
+- JPA DDL: `validate` (valida que el esquema exista)
+- SQL logging: deshabilitado
+
+**Para ejecutar en producción:**
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=prod"
+```
+
+## Base de datos H2 (Desarrollo)
+
+La aplicación usa H2 para pruebas locales en el perfil development.
 
 Consola H2:
 
@@ -223,6 +310,6 @@ Datos de conexión:
 ```text
 JDBC URL: jdbc:h2:mem:gestion_pedidos_db
 User: sa
-Password: vacío
+Password: vacio
 ```
 

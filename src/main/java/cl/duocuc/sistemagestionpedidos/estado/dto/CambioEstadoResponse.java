@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 public class CambioEstadoResponse {
 
     private Long id;
-    private Long pedidoId;
+    private Long numeroPedido;
     private String estadoAnterior;
     private String estadoNuevo;
     private LocalDateTime fechaCambio;

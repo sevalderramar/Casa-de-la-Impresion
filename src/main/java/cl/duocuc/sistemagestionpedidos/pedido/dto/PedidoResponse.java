@@ -12,9 +12,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PedidoResponse {
-
-    private Long id;
-    private String numeroPedido;
+    private Long numeroPedido;
     private Long clienteId;
     private String estado;
     private String tipoDespacho;

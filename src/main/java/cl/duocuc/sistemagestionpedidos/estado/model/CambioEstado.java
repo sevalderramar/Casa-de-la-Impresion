@@ -20,7 +20,7 @@ public class CambioEstado {
     private Long id;
 
     @Column(nullable = false)
-    private Long pedidoId;
+    private Long numeroPedido;
 
     @Column(name = "estado_anterior")
     private String estadoAnterior;

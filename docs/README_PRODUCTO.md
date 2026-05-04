@@ -6,8 +6,8 @@ Su diseno mantiene bajo acoplamiento y deja preparado el dominio para evoluciona
 ## 1. Objetivo del modulo producto
 
 El modulo `producto` administra el catalogo de productos del sistema. Permite crear, consultar,
-actualizar y eliminar logicamente productos mediante una API REST, manteniendo reglas de negocio
-consistentes sobre nombre unico, precio y stock.
+actualizar y eliminar (físicamente) productos mediante una API REST, manteniendo reglas de negocio
+consistentes sobre nombre único, precio y stock.
 
 ## 2. Arquitectura del modulo
 
@@ -38,36 +38,28 @@ aplicacion Spring Boot.
 
 La entidad `Producto` contiene:
 
-- `id` (Long): identificador unico.
+- `id` (Long): identificador único.
 - `nombre` (String): nombre comercial del producto.
-- `descripcion` (String): descripcion funcional/comercial.
-- `categoria` (String): categoria del producto.
+- `descripcion` (String): descripción funcional/comercial.
+- `categoria` (String): categoría del producto.
 - `precio` (Double): precio unitario.
 - `stock` (Integer): unidades disponibles.
-- `estado` (String): estado logico del registro (`ACTIVO` / `INACTIVO`).
 - `fechaCreacion` (LocalDateTime): fecha y hora de alta del producto.
 
 ## 5. Reglas de negocio
 
-- No se permiten productos duplicados por nombre (comparacion case-insensitive).
-- `fechaCreacion` se asigna automaticamente al crear.
-- `estado` se inicializa como `ACTIVO` al crear.
-- Eliminacion logica: cambia `estado` a `INACTIVO`.
+- No se permiten productos duplicados por nombre (comparación case-insensitive).
+- `fechaCreacion` se asigna automáticamente al crear.
 - No se permite `precio` negativo ni cero.
 - No se permite `stock` negativo.
 
-## 6. Por que se usa `estado` en vez de `activo`
+## 6. Eliminación física
 
-Se utiliza un campo `estado` de tipo texto para permitir evolucion del dominio sin cambios estructurales
-relevantes. Con `estado` es posible agregar nuevos valores futuros (por ejemplo `DESCONTINUADO`) sin
-quedar limitado a un booleano.
+El endpoint DELETE elimina **completamente** el registro de la base de datos. La aplicación refleja
+una política de gestión de datos donde los productos son eliminados cuando ya no se necesitan en el
+catálogo. Si en el futuro se requiere auditoría histórica, se implementará una tabla separada.
 
-## 7. Eliminacion logica
-
-El endpoint DELETE no elimina fisicamente el registro. El servicio actualiza `estado` a `INACTIVO`.
-Esto preserva historial operativo y facilita auditoria.
-
-## 8. Endpoints disponibles
+## 7. Por qué producto está desacoplado del módulo pedido
 
 Base URL: `/api/productos`
 
@@ -131,7 +123,7 @@ Estados HTTP:
 
 ## 12. Como revisar datos en H2
 
-En ejecucion local, abrir la consola H2 definida por la aplicacion (normalmente):
+En ejecución local, abrir la consola H2 definida por la aplicación (normalmente):
 
 `http://localhost:8080/h2-console`
 
@@ -139,12 +131,12 @@ Tabla principal:
 
 - `PRODUCTOS`
 
-Consultas utiles:
+Consultas útiles:
 
 ```sql
 SELECT * FROM PRODUCTOS;
-SELECT * FROM PRODUCTOS WHERE ESTADO = 'ACTIVO';
 SELECT * FROM PRODUCTOS WHERE LOWER(CATEGORIA) = LOWER('ETIQUETAS');
+SELECT * FROM PRODUCTOS WHERE STOCK < 100;
 ```
 
 ## 13. Conexion futura con `pedido-service`

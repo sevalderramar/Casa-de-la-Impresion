@@ -9,10 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
-    Optional<Pedido> findByNumeroPedido(String numeroPedido);
-    boolean existsByNumeroPedido(String numeroPedido);
-    List<Pedido> findByEstado(String estado);
+    Optional<Pedido> findByNumeroPedido(Long numeroPedido);
+    boolean existsByNumeroPedido(Long numeroPedido);
     List<Pedido> findByClienteId(Long clienteId);
-    List<Pedido> findByEstadoAndTipoDespacho(String estado, String tipoDespacho);
 
 }
