@@ -19,17 +19,17 @@ Este servicio proporciona un registro completo y auditable de todas las transici
 
 ## 🏗️ Información de Despliegue
 
-| Parámetro | Valor |
-|-----------|-------|
-| **Puerto** | 8084 |
-| **Contexto** | `/` (root) |
-| **Base de Datos** | H2 (en memoria) |
-| **Base de Datos (URL)** | `jdbc:h2:mem:estado_db` |
-| **Usuario BD** | `sa` |
-| **Contraseña BD** | (vacía) |
-| **H2 Console** | `http://localhost:8084/h2-console` |
-| **JDK** | Java 25 |
-| **Spring Boot** | 4.0.5 |
+| Parámetro | Valor                              |
+|-----------|------------------------------------|
+| **Puerto** | 8086                               |
+| **Contexto** | `/` (root)                         |
+| **Base de Datos** | H2 (en memoria)                    |
+| **Base de Datos (URL)** | `jdbc:h2:mem:estado_db`            |
+| **Usuario BD** | `sa`                               |
+| **Contraseña BD** | (vacía)                            |
+| **H2 Console** | `http://localhost:8086/h2-console` |
+| **JDK** | Java 25                            |
+| **Spring Boot** | 4.0.5                              |
 
 ---
 
@@ -256,7 +256,7 @@ GET /api/estados/pedido/1001/ultimo
 ### Ejemplo 1: Crear Primer Cambio (Estado Inicial)
 ```bash
 # Request
-POST http://localhost:8084/api/estados
+POST http://localhost:8086/api/estados
 Content-Type: application/json
 
 {
@@ -280,7 +280,7 @@ Content-Type: application/json
 ### Ejemplo 2: Cambiar Estado a Confirmado
 ```bash
 # Request
-POST http://localhost:8084/api/estados
+POST http://localhost:8086/api/estados
 Content-Type: application/json
 
 {
@@ -304,7 +304,7 @@ Content-Type: application/json
 ### Ejemplo 3: Consultar Historial Completo
 ```bash
 # Request
-GET http://localhost:8084/api/estados/pedido/5001
+GET http://localhost:8086/api/estados/pedido/5001
 
 # Response (200)
 [
@@ -330,7 +330,7 @@ GET http://localhost:8084/api/estados/pedido/5001
 ### Ejemplo 4: Obtener Estado Actual
 ```bash
 # Request
-GET http://localhost:8084/api/estados/pedido/5001/ultimo
+GET http://localhost:8086/api/estados/pedido/5001/ultimo
 
 # Response (200)
 {
@@ -346,7 +346,7 @@ GET http://localhost:8084/api/estados/pedido/5001/ultimo
 ### Ejemplo 5: Error - Validación Fallida
 ```bash
 # Request (falta estadoNuevo)
-POST http://localhost:8084/api/estados
+POST http://localhost:8086/api/estados
 Content-Type: application/json
 
 {
@@ -367,7 +367,7 @@ Content-Type: application/json
 ### Ejemplo 6: Error - Pedido No Encontrado
 ```bash
 # Request
-GET http://localhost:8084/api/estados/pedido/99999
+GET http://localhost:8086/api/estados/pedido/99999
 
 # Response (404 Not Found)
 {
@@ -385,7 +385,7 @@ GET http://localhost:8084/api/estados/pedido/99999
 
 ### Acceso a H2 Console
 
-1. Abre tu navegador e ingresa a: **`http://localhost:8084/h2-console`**
+1. Abre tu navegador e ingresa a: **`http://localhost:8086/h2-console`**
 2. Verifica la configuración de conexión:
    - **JDBC URL**: `jdbc:h2:mem:estado_db`
    - **User Name**: `sa`
@@ -477,7 +477,7 @@ Errores no controlados:
 ### Requisitos Previos
 - **JDK 25** instalado
 - **Maven 3.8.1+** instalado (o usar `mvnw.cmd` del proyecto)
-- **Puerto 8084** disponible
+- **Puerto 8086** disponible
 
 ### Paso 1: Compilar el Proyecto
 ```bash
@@ -546,7 +546,7 @@ El sistema está compuesto por los siguientes microservicios:
                                    ┌────▼──────┐
                                    │  estado   │
                                    │  service  │
-                                   │  (8084)   │
+                                   │  (8086)   │
                                    └───────────┘
 ```
 
@@ -560,7 +560,7 @@ El sistema está compuesto por los siguientes microservicios:
 
 ### Ejemplo Futuro: Llamada a estado-service desde pedido-service
 ```java
-@FeignClient(name = "estado-service", url = "http://localhost:8084")
+@FeignClient(name = "estado-service", url = "http://localhost:8086")
 public interface EstadoServiceClient {
     
     @GetMapping("/api/estados/pedido/{numeroPedido}/ultimo")
@@ -581,7 +581,7 @@ Para un correcto funcionamiento del ecosistema de microservicios, ejecuta los se
 |-------|----------|--------|---------|
 | 1 | cliente-service | 8081 | `mvn spring-boot:run` |
 | 2 | producto-service | 8082 | `mvn spring-boot:run` |
-| 3 | **estado-service** | **8084** | `mvn spring-boot:run` ← Este servicio |
+| 3 | **estado-service** | **8086** | `mvn spring-boot:run` ← Este servicio |
 | 4 | pedido-service | 8083 | `mvn spring-boot:run` |
 
 **Nota:** Aunque `estado-service` es "stateless" y puede ejecutarse en cualquier orden, es recomendable iniciarlo antes que `pedido-service` para evitar errores de conexión al intentar consultar estados.
@@ -601,21 +601,21 @@ $body = @{
     observacion = "Pedido creado"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:8084/api/estados" `
+Invoke-RestMethod -Uri "http://localhost:/api/estados" `
     -Method POST `
     -ContentType "application/json" `
     -Body $body
 
 # Test 2: Consultar historial
-Invoke-RestMethod -Uri "http://localhost:8084/api/estados/pedido/1001" `
+Invoke-RestMethod -Uri "http://localhost:8086/api/estados/pedido/1001" `
     -Method GET
 
 # Test 3: Obtener último estado
-Invoke-RestMethod -Uri "http://localhost:8084/api/estados/pedido/1001/ultimo" `
+Invoke-RestMethod -Uri "http://localhost:8086/api/estados/pedido/1001/ultimo" `
     -Method GET
 
 # Test 4: H2 Console (abre en navegador)
-Start-Process "http://localhost:8084/h2-console"
+Start-Process "http://localhost:8086/h2-console"
 ```
 
 ---
