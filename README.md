@@ -151,10 +151,3 @@ handler
 config
 client
 ```
-
----
-
-# Autor
-
-Proyecto académico — Arquitectura de Microservicios  
-DUOC UC — Fullstack I Backend
