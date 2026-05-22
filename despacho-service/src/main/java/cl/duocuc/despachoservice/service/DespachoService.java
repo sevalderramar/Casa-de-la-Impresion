@@ -3,6 +3,7 @@ package cl.duocuc.despachoservice.service;
 import cl.duocuc.despachoservice.client.PedidoFeignClient;
 import cl.duocuc.despachoservice.common.exception.ConflictException;
 import cl.duocuc.despachoservice.common.exception.ResourceNotFoundException;
+import cl.duocuc.despachoservice.common.exception.ServiceUnavailableException;
 import cl.duocuc.despachoservice.dto.DespachoRequest;
 import cl.duocuc.despachoservice.dto.DespachoResponse;
 import cl.duocuc.despachoservice.model.Despacho;
@@ -93,7 +94,7 @@ public class DespachoService {
         } catch (FeignException.NotFound ex) {
             throw new ResourceNotFoundException("Pedido no encontrado con número " + numeroPedido);
         } catch (FeignException ex) {
-            throw new IllegalStateException("No se pudo validar el pedido en pedido-service", ex);
+            throw new ServiceUnavailableException("No se pudo validar el pedido en pedido-service", ex);
         }
     }
 

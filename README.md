@@ -1,82 +1,160 @@
-# Estado actual del proyecto
+# Casa de la Impresión — Arquitectura de Microservicios
 
-## Arquitectura implementada
+Sistema de gestión de pedidos basado en arquitectura de microservicios desarrollado con Spring Boot 4.0.5 y Java 21.
 
-El proyecto actualmente se encuentra desarrollado bajo arquitectura de microservicios utilizando Spring Boot.
+---
 
-## Microservicios implementados
+# Arquitectura
 
-| Microservicio    | Estado       | Puerto |
-| ---------------- | ------------ | ------ |
-| cliente-service  | Implementado | 8081   |
-| producto-service | Implementado | 8082   |
-| pedido-service   | Implementado | 8083   |
-| despacho-service | Implementado | 8084   |
-| estado-service   | Implementado | 8086   |
+El sistema está compuesto por múltiples microservicios independientes que se comunican mediante OpenFeign.
 
-## Microservicios pendientes
+| Microservicio | Puerto | Responsabilidad |
+|---|---|---|
+| auth-service | 8090 | Autenticación JWT y usuarios |
+| pedido-service | 8081 | Gestión de pedidos |
+| cliente-service | 8082 | Gestión de clientes |
+| producto-service | 8083 | Gestión de productos |
+| despacho-service | 8084 | Gestión de despachos |
+| fabricacion-service | 8085 | Gestión de fabricación |
+| estado-service | 8086 | Historial y estados |
+| metrica-service | 8087 | Métricas del sistema |
+| transportista-service | 8088 | Gestión de transportistas |
+| log-service | 8089 | Registro de logs |
 
-| Microservicio         | Estado    |
-| --------------------- | --------- |
-| fabricacion-service   | Pendiente |
-| transportista-service | Pendiente |
-| metrica-service       | Pendiente |
-| log-service           | Pendiente |
-| auth-service          | Pendiente |
+---
 
-## Lessons implementadas
+# Tecnologías utilizadas
 
-### Lesson 12
+- Java 21
+- Spring Boot 4.0.5
+- Maven
+- Spring Data JPA
+- Spring Security
+- JWT
+- OpenFeign
+- H2 Database
+- Lombok
 
-* Relaciones JPA
-* OneToMany
-* ManyToOne
+---
 
-### Lesson 13
+# Seguridad JWT
 
-* Historial de estados
-* CambioEstado
-* Auditoría básica
+La autenticación del sistema se basa en JWT.
 
-### Lesson 14
+El token es generado por:
 
-* Arquitectura de microservicios
-* Comunicación entre servicios
-* FeignClient
-* Bases de datos separadas
+```text
+/auth/login
+```
 
-### Lesson 15
+Los demás microservicios validan el token mediante filtros JWT.
 
-* Flyway Migrations
-* ddl-auto=validate
-* Migraciones SQL versionadas
+## Variable de entorno requerida
 
-## Tecnologías implementadas
+```powershell
+$env:JWT_SECRET="clave-super-secreta"
+```
 
-* Java 25
-* Spring Boot 4.0.5
-* Maven
-* FeignClient
-* H2 Database
-* Flyway
-* Lombok
-* Spring Data JPA
-* Validation
+---
 
-## Estado general
+# Profiles
 
-El sistema actualmente permite:
+## Desarrollo
 
-* Gestión de clientes
-* Gestión de productos
-* Gestión de pedidos
-* Gestión de estados
-* Gestión de despachos
-* Historial de cambios de estado
-* Comunicación entre microservicios mediante FeignClient
-* Migraciones SQL mediante Flyway
+```properties
+spring.profiles.active=h2
+```
 
-## Estado del desarrollo
+## Producción
 
-El proyecto se encuentra funcional y estable hasta la Lesson 15.
-Actualmente se continúa el desarrollo de los microservicios restantes y mejoras de arquitectura.
+```properties
+spring.profiles.active=prod
+```
+
+---
+
+# Ejecución
+
+## Compilar
+
+```powershell
+.\mvnw clean compile
+```
+
+## Ejecutar
+
+```powershell
+.\mvnw spring-boot:run
+```
+
+---
+
+# H2 Console
+
+Cada microservicio posee su propia consola H2.
+
+Ejemplo:
+
+```text
+http://localhost:8081/h2-console
+```
+
+Usuario:
+
+```text
+sa
+```
+
+Password:
+
+```text
+(vacío)
+```
+
+---
+
+# Flujo general
+
+1. Usuario inicia sesión en auth-service
+2. auth-service genera JWT
+3. El cliente envía Authorization Bearer Token
+4. Los microservicios validan el token
+5. Los servicios se comunican mediante OpenFeign
+
+---
+
+# Orden recomendado para demo
+
+1. auth-service
+2. cliente-service
+3. producto-service
+4. pedido-service
+5. estado-service
+6. despacho-service
+7. fabricacion-service
+8. metrica-service
+9. transportista-service
+10. log-service
+
+---
+
+# Estructura general
+
+```text
+controller
+service
+repository
+dto
+entity
+exception
+handler
+config
+client
+```
+
+---
+
+# Autor
+
+Proyecto académico — Arquitectura de Microservicios  
+DUOC UC — Fullstack I Backend

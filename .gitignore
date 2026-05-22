@@ -1,0 +1,9 @@
+target/
+.idea/
+*.iml
+data/
+*/target/
+*/data/
+.env
+*.env
+_configure-jwt-security.ps1
