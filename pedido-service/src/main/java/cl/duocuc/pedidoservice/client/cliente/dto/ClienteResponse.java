@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -20,6 +19,6 @@ public class ClienteResponse {
     private String direccion;
     private String comuna;
     private String region;
-    private LocalDateTime fechaRegistro;
+    private LocalDate fechaRegistro;
 }
 

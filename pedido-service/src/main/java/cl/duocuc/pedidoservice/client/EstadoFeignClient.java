@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import cl.duocuc.pedidoservice.common.ApiResponse;
 import java.util.List;
 
 @FeignClient(name = "estado-service", url = "${services.estado.url}")
 public interface EstadoFeignClient {
 
     @PostMapping("/api/estados")
-    void registrarCambioEstado(@RequestBody CambioEstadoRequest request);
+    ApiResponse<Void> registrarCambioEstado(@RequestBody CambioEstadoRequest request);
 
     @GetMapping("/api/estados/pedido/{numeroPedido}")
     List<CambioEstadoResponse> listarCambiosPorPedido(@PathVariable("numeroPedido") Long numeroPedido);

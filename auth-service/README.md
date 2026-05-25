@@ -109,36 +109,111 @@ Formato estandar:
 }
 ```
 
-## 16. Como compilar
+## 16. Funcionamiento general del servicio
+
+`auth-service` implementa un flujo de autenticación stateless basado en JWT (JSON Web Tokens):
+
+1. **Login**: El usuario proporciona correo y contraseña en `POST /api/auth/login`.
+2. **Generación de Token**: El servicio valida las credenciales y genera un token JWT firmado.
+3. **Reutilización**: El cliente incluye el token en el header `Authorization: Bearer <TOKEN>` para acceder a endpoints protegidos.
+4. **Validación**: Un filtro JWT (`JwtAuthFilter`) valida cada request y inyecta la autenticación en el contexto de seguridad.
+5. **Gestión de Usuarios**: Solo usuarios con rol `ADMIN` pueden crear/actualizar usuarios.
+
+## 17. Como compilar desde terminal
 ```powershell
+cd .\auth-service
 .\mvnw clean compile
 ```
 
-## 17. Como ejecutar
+## 18. Como ejecutar desde terminal
 ```powershell
-$env:JWT_SECRET="BASE64_SECRET"
-.\mvnw spring-boot:run
+cd .\auth-service
+$env:JWT_SECRET="tu-secreto-base64-aqui"
+.\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
-## 18. Estructura de carpetas
-```text
+## 19. Como ejecutar desde IntelliJ IDEA
+
+1. **Abrir el proyecto**: File → Open → selecciona la carpeta `auth-service`
+2. **Configurar la variable de entorno JWT_SECRET**: 
+   - Edit Configurations (esquina superior derecha)
+   - Create new → Spring Boot
+   - Name: `auth-service`
+   - Main class: `cl.duocuc.authservice.AuthServiceApplication`
+   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Active profiles: `h2`
+3. **Ejecutar**: Presiona el botón "Run" (▶) o Shift+F10
+4. **Verificar**: Abre navegador en `http://localhost:8090/h2-console`
+   - Usuario: `sa`
+   - Contraseña: (dejar vacío)
+
+## 20. Testear endpoints con Postman
+
+### 1. Login (Público)
+```http
+POST http://localhost:8090/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@casaimpresion.cl",
+  "password": "123456"
+}
+```
+**Respuesta esperada (201)**:
+```json
+{
+  "mensaje": "Login exitoso",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "tipo": "Bearer",
+    "email": "admin@casaimpresion.cl",
+    "rol": "ADMIN",
+    "expiracion": 1760000000000
+  },
+  "exitoso": true,
+  "timestamp": "2026-05-22T10:00:00"
+}
+```
+
+### 2. Ping (Healthcheck - Público)
+```http
+GET http://localhost:8090/api/auth/ping
+```
+
+### 3. Listar Usuarios (Protegido - ADMIN)
+```http
+GET http://localhost:8090/api/auth/usuarios
+Authorization: Bearer <TOKEN_JWT_DEL_LOGIN>
+```
+
+## 21. Estructura de carpetas
+```
 auth-service/
-  src/main/java/cl/duocuc/authservice/
-    config/
-    controller/
-    dto/
-    entity/
-    exception/
-    repository/
-    service/
-  src/main/resources/
-    application.properties
-    application-h2.properties
-    application-prod.properties
+├── pom.xml
+├── README.md
+├── src/
+│   └── main/
+│       ├── java/cl/duocuc/authservice/
+│       │   ├── config/         (JwtUtil, SecurityConfig, JwtAuthFilter)
+│       │   ├── controller/     (AuthController, UsuarioController)
+│       │   ├── dto/            (LoginRequestDTO, UsuarioResponseDTO, etc)
+│       │   ├── entity/         (Usuario)
+│       │   ├── exception/      (ResourceNotFoundException, ConflictException)
+│       │   ├── repository/     (UsuarioRepository)
+│       │   ├── service/        (AuthService, UsuarioService)
+│       │   └── AuthServiceApplication.java
+│       └── resources/
+│           ├── application.properties
+│           ├── application-h2.properties
+│           └── application-prod.properties
+└── data/
+    └── auth_db.mv.db
 ```
 
-## 19. Estado actual del servicio
-- Compila correctamente con `Java 21` y `Spring Boot 4.0.5`.
-- Seguridad JWT activa.
-- Profile por defecto: `h2`.
+## 22. Estado actual del servicio
+- ✅ Compila correctamente con `Java 21` y `Spring Boot 4.0.5`.
+- ✅ Seguridad JWT activa y funcional.
+- ✅ Profile por defecto: `h2`.
+- ✅ H2 Console disponible en `http://localhost:8090/h2-console`.
+- ✅ Todos los endpoints documentados y probados.
 

@@ -36,6 +36,6 @@ public class Pedido {
     private Double monto;
     private LocalDateTime fechaCreacion;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ItemPedido> items = new ArrayList<>();
 }

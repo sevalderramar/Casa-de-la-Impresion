@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
         HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
-        String message = ex.getReason() != null && !ex.getReason().isBlank() ? ex.getReason() : "Error en la comunicaciÃ³n con otro servicio";
+        String message = ex.getReason() != null && !ex.getReason().isBlank() ? ex.getReason() : "Error en la comunicacion con otro servicio";
         return buildResponse(status, message);
     }
 

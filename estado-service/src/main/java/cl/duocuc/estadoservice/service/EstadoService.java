@@ -20,9 +20,6 @@ public class EstadoService {
         this.cambioEstadoRepository = cambioEstadoRepository;
     }
 
-    /**
-     * Registra un nuevo cambio de estado para un pedido.
-     */
     public CambioEstadoResponse registrarCambioEstado(CambioEstadoRequest request) {
         CambioEstado cambio = new CambioEstado();
         cambio.setNumeroPedido(request.getNumeroPedido());

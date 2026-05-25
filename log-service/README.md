@@ -86,41 +86,234 @@ Authorization: Bearer <TOKEN_JWT>
 }
 ```
 
-## 14. Comunicacion Feign si aplica
-No usa clientes Feign de negocio en la implementacion actual.
+## 14. Descripcion detallada del servicio
 
-## 15. Manejo global de errores Lesson 18
-Incluye manejo centralizado de 400/404/409/500 con payload JSON simple.
+`log-service` actúa como repositorio centralizado de auditoría y trazabilidad:
 
-## 16. Como compilar
+- **Registro de Eventos**: Persiste logs de operaciones de todos los servicios.
+- **Filtrado Flexible**: Por servicio, por fecha o ambos.
+- **Consulta Eficiente**: Búsquedas rápidas en BD con índices.
+- **Independencia**: No depende de otros servicios, puede ejecutarse aislado.
+- **Auditoría**: Mantiene historial completo de quién hizo qué y cuándo.
+
+Típicamente los logs vienen de:
+- `pedido-service`: CREAR_PEDIDO, CAMBIAR_ESTADO
+- `fabricacion-service`: CREAR_ORDEN, ACTUALIZAR_ESTADO
+- `cliente-service`: CREAR_CLIENTE, ACTUALIZAR_CLIENTE
+
+## 15. Como compilar desde terminal
 ```powershell
+cd .\log-service
 .\mvnw clean compile
 ```
 
-## 17. Como ejecutar
+## 16. Como ejecutar desde terminal
 ```powershell
-$env:JWT_SECRET="BASE64_SECRET"
-.\mvnw spring-boot:run
+cd .\log-service
+$env:JWT_SECRET="tu-secreto-base64-aqui"
+.\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
-## 18. Estructura de carpetas
-```text
+## 17. Como ejecutar desde IntelliJ IDEA
+
+1. **Abrir el proyecto**: File → Open → carpeta `log-service`
+2. **Configurar variables de entorno**:
+   - Edit Configurations (esquina superior)
+   - Create new → Spring Boot
+   - Name: `log-service`
+   - Main class: `cl.duocuc.logservice.LogServiceApplication`
+   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Active profiles: `h2`
+3. **Ejecutar**: Run (▶) o Shift+F10
+4. **Verificar**: `http://localhost:8089/h2-console`
+   - Usuario: `sa`
+   - Contraseña: (vacío)
+
+## 18. Testear endpoints con Postman
+
+### 0. Obtener Token JWT primero (desde auth-service)
+```http
+POST http://localhost:8090/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@casaimpresion.cl",
+  "password": "123456"
+}
+```
+
+### 1. Healthcheck (Público)
+```http
+GET http://localhost:8089/api/logs/ping
+```
+**Respuesta esperada (200)**:
+```json
+{
+  "mensaje": "log-service OK",
+  "data": "log-service OK",
+  "exitoso": true,
+  "timestamp": "2026-05-22T10:00:00"
+}
+```
+
+### 2. Registrar un Log
+```http
+POST http://localhost:8089/api/logs
+Authorization: Bearer <TOKEN_JWT>
+Content-Type: application/json
+
+{
+  "servicio": "pedido-service",
+  "operacion": "CREAR_PEDIDO",
+  "usuarioId": "admin@casaimpresion.cl",
+  "resultado": "EXITO",
+  "detalle": "Pedido PED-1001 creado exitosamente para cliente ID 5"
+}
+```
+**Respuesta esperada (201)**:
+```json
+{
+  "mensaje": "Log registrado",
+  "data": {
+    "id": 1,
+    "servicio": "pedido-service",
+    "operacion": "CREAR_PEDIDO",
+    "usuarioId": "admin@casaimpresion.cl",
+    "timestamp": "2026-05-22T10:00:00",
+    "resultado": "EXITO",
+    "detalle": "Pedido PED-1001 creado exitosamente para cliente ID 5"
+  },
+  "exitoso": true,
+  "timestamp": "2026-05-22T10:00:00"
+}
+```
+
+### 3. Registrar un Log de Error
+```http
+POST http://localhost:8089/api/logs
+Authorization: Bearer <TOKEN_JWT>
+Content-Type: application/json
+
+{
+  "servicio": "fabricacion-service",
+  "operacion": "CREAR_ORDEN",
+  "usuarioId": "operador-01",
+  "resultado": "ERROR",
+  "detalle": "Pedido no encontrado en pedido-service"
+}
+```
+
+### 4. Consultar Todos los Logs
+```http
+GET http://localhost:8089/api/logs
+Authorization: Bearer <TOKEN_JWT>
+```
+
+### 5. Filtrar Logs por Servicio
+```http
+GET http://localhost:8089/api/logs?servicio=pedido-service
+Authorization: Bearer <TOKEN_JWT>
+```
+**Respuesta esperada (200)**:
+```json
+{
+  "mensaje": "Logs consultados correctamente",
+  "data": [
+    {
+      "id": 1,
+      "servicio": "pedido-service",
+      "operacion": "CREAR_PEDIDO",
+      "usuarioId": "admin@casaimpresion.cl",
+      "timestamp": "2026-05-22T10:00:00",
+      "resultado": "EXITO",
+      "detalle": "Pedido PED-1001 creado exitosamente"
+    }
+  ],
+  "exitoso": true,
+  "timestamp": "2026-05-22T10:30:00"
+}
+```
+
+### 6. Filtrar por Fecha Inicial
+```http
+GET http://localhost:8089/api/logs?desde=2026-05-01T00:00:00
+Authorization: Bearer <TOKEN_JWT>
+```
+
+### 7. Filtrar por Servicio y Fecha
+```http
+GET http://localhost:8089/api/logs?servicio=fabricacion-service&desde=2026-05-01T00:00:00
+Authorization: Bearer <TOKEN_JWT>
+```
+
+## 19. Campos de un LogEntrada
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | Long | Identificador único |
+| `servicio` | String | Nombre del servicio que genera el log |
+| `operacion` | String | Tipo de operación (CREAR, ACTUALIZAR, ELIMINAR) |
+| `usuarioId` | String | Usuario que realizó la acción (email o ID) |
+| `timestamp` | LocalDateTime | Fecha/hora exacta del evento |
+| `resultado` | String | EXITO o ERROR |
+| `detalle` | String | Descripción adicional (max 1000 caracteres) |
+
+## 20. Estructura de carpetas
+```
 log-service/
-  src/main/java/cl/duocuc/logservice/
-    config/
-    controller/
-    dto/
-    entity/
-    exception/
-    service/
-  src/main/resources/
-    application.properties
-    application-h2.properties
-    application-prod.properties
+├── pom.xml
+├── README.md
+├── src/
+│   └── main/
+│       ├── java/cl/duocuc/logservice/
+│       │   ├── config/           (GlobalExceptionHandler)
+│       │   ├── controller/       (LogController)
+│       │   ├── dto/              (LogRequestDTO, ApiResponse)
+│       │   ├── entity/           (LogEntrada)
+│       │   ├── exception/        
+│       │   ├── repository/       (LogRepository)
+│       │   ├── service/          (LogService, LogServiceImpl)
+│       │   └── LogServiceApplication.java
+│       └── resources/
+│           ├── application.properties
+│           ├── application-h2.properties
+│           └── application-prod.properties
+└── data/
+    └── log_db.mv.db
 ```
 
-## 19. Estado actual del servicio
-- Compila correctamente.
-- Seguridad JWT activa.
-- Profile por defecto: `h2`.
+## 21. Validaciones aplicadas
+- **Servicio**: No vacío, máx 100 caracteres.
+- **Operación**: No vacía, máx 100 caracteres.
+- **Resultado**: Debe ser EXITO o ERROR.
+- **Detalle**: Opcional, máx 1000 caracteres.
+- **Timestamp**: Se asigna automáticamente en el servidor.
+
+## 22. Notas importantes
+- ✅ Todos los endpoints de negocio requieren JWT válido.
+- ✅ Este servicio NO consume otros microservicios (sin Feign).
+- ✅ Cada log es inmutable una vez creado (no hay UPDATE/DELETE).
+- ✅ Las consultas soportan paginación automática.
+- ✅ Ideal para auditoría, debugging y monitoreo.
+
+## 23. Casos de uso típicos
+```
+pedido-service registra:
+  CREAR_PEDIDO → EXITO/ERROR
+  CAMBIAR_ESTADO → EXITO/ERROR
+
+fabricacion-service registra:
+  CREAR_ORDEN → EXITO/ERROR
+  ACTUALIZAR_ESTADO → EXITO/ERROR
+
+cliente-service registra:
+  CREAR_CLIENTE → EXITO/ERROR
+  ACTUALIZAR_CLIENTE → EXITO/ERROR
+```
+
+## 24. Estado actual del servicio
+- ✅ Compila correctamente con Java 21 y Spring Boot 4.0.5.
+- ✅ Seguridad JWT activa.
+- ✅ H2 Console accesible en `http://localhost:8089/h2-console`.
+- ✅ Completamente independiente (no tiene dependencias Feign).
+- ✅ Profile por defecto: `h2`.
 

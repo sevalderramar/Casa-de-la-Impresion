@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class EstadoRequest {
 
-    @NotBlank(message = "estado es obligatorio")
+    @NotBlank(message = "El estado es obligatorio")
     private String estado;
 
 }

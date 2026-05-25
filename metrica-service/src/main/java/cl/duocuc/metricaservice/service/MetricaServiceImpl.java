@@ -36,7 +36,7 @@ public class MetricaServiceImpl implements MetricaService {
         
         String nombreCliente = obtenerNombreClienteConFallback(clienteId);
 
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(clienteId, null, null).data();
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(clienteId, null, null);
         if (pedidos == null) {
             pedidos = new ArrayList<>();
         }
@@ -71,7 +71,7 @@ public class MetricaServiceImpl implements MetricaService {
     @Override
     public List<MetricaClienteResponseDTO> obtenerRankingClientes(Integer limite) {
         log.info("Generando ranking de clientes, limite={}", limite);
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, null, null).data();
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, null, null);
         if (pedidos == null) pedidos = new ArrayList<>();
 
         Map<Long, Double> montoPorCliente = pedidos.stream()
@@ -96,7 +96,7 @@ public class MetricaServiceImpl implements MetricaService {
     @Override
     public List<MetricaProductoResponseDTO> obtenerTopProductos(LocalDate desde, LocalDate hasta, Integer limite) {
         log.info("Generando top productos desde={} hasta={}, limite={}", desde, hasta, limite);
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, desde, hasta).data();
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, desde, hasta);
         if (pedidos == null) pedidos = new ArrayList<>();
 
         Map<Long, Integer> cantidadPorProducto = new HashMap<>();
@@ -139,7 +139,7 @@ public class MetricaServiceImpl implements MetricaService {
     @Override
     public ResumenVentasResponseDTO obtenerResumenVentas(LocalDate desde, LocalDate hasta) {
         log.info("Generando resumen de ventas desde={} hasta={}", desde, hasta);
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, desde, hasta).data();
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, desde, hasta);
         if (pedidos == null) pedidos = new ArrayList<>();
 
         double montoTotal = pedidos.stream().mapToDouble(PedidoResponseDTO::getMonto).sum();
@@ -150,9 +150,9 @@ public class MetricaServiceImpl implements MetricaService {
 
     private String obtenerNombreClienteConFallback(Long clienteId) {
         try {
-            ApiResponse<ClienteResponseDTO> response = clienteFeignClient.obtenerCliente(clienteId);
-            if (response != null && response.data() != null) {
-                return response.data().getNombreCl();
+            ClienteResponseDTO response = clienteFeignClient.obtenerCliente(clienteId);
+            if (response != null) {
+                return response.getNombre();
             }
         } catch (FeignException e) {
             if (e.status() == 404) {
@@ -167,9 +167,9 @@ public class MetricaServiceImpl implements MetricaService {
 
     private String obtenerNombreClienteOcultandoError(Long clienteId) {
         try {
-            ApiResponse<ClienteResponseDTO> response = clienteFeignClient.obtenerCliente(clienteId);
-            if (response != null && response.data() != null) {
-                return response.data().getNombreCl();
+            ClienteResponseDTO response = clienteFeignClient.obtenerCliente(clienteId);
+            if (response != null) {
+                return response.getNombre();
             }
         } catch (FeignException e) {
             log.warn("Fallo tolerado Feign al obtener clienteId={} para ranking (status={}): {}", clienteId, e.status(), e.getMessage());

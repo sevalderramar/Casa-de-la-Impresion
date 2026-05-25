@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClienteResponseDTO {
     private Long idCliente;
-    private String nombreCl;
+    private String nombre;
 }

@@ -1,6 +1,5 @@
 package cl.duocuc.metricaservice.client;
 
-import cl.duocuc.metricaservice.dto.ApiResponse;
 import cl.duocuc.metricaservice.dto.PedidoResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +12,7 @@ import java.util.List;
 public interface PedidoFeignClient {
 
     @GetMapping("/api/pedidos")
-    ApiResponse<List<PedidoResponseDTO>> listarPedidos(
+    List<PedidoResponseDTO> listarPedidos(
             @RequestParam(value = "clienteId", required = false) Long clienteId,
             @RequestParam(value = "desde", required = false) LocalDate desde,
             @RequestParam(value = "hasta", required = false) LocalDate hasta

@@ -21,9 +21,9 @@ public class PedidoServiceClient {
         } catch (FeignException.NotFound e) {
             throw new PedidoNoEncontradoException("Pedido no encontrado: " + numeroPedido);
         } catch (FeignException.BadRequest e) {
-            throw new FabricacionException(buildMessage("pedido-service rechazÃ³ la solicitud", e));
+            throw new FabricacionException(buildMessage("pedido-service rechaza la solicitud", e));
         } catch (FeignException.Unauthorized | FeignException.Forbidden e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "pedido-service no permitiÃ³ la validaciÃ³n", e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "pedido-service no permite la validacion", e);
         } catch (RetryableException e) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible conectar con pedido-service", e), e);
         } catch (FeignException e) {
@@ -38,13 +38,13 @@ public class PedidoServiceClient {
             PedidoFeignClient.UpdateEstadoRequest req = new PedidoFeignClient.UpdateEstadoRequest("PRODUCCION");
             feign.actualizarEstado(numeroPedido, req);
         } catch (FeignException.NotFound e) {
-            throw new PedidoNoEncontradoException("Pedido no encontrado al iniciar fabricaciÃ³n: " + numeroPedido);
+            throw new PedidoNoEncontradoException("Pedido no encontrado al iniciar fabricacion: " + numeroPedido);
         } catch (FeignException.Conflict e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, buildMessage("pedido-service rechazÃ³ el inicio de fabricaciÃ³n", e), e);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, buildMessage("pedido-service rechaza el inicio de fabricacion", e), e);
         } catch (FeignException.BadRequest e) {
-            throw new FabricacionException(buildMessage("pedido-service rechazÃ³ el inicio de fabricaciÃ³n", e));
+            throw new FabricacionException(buildMessage("pedido-service rechaza el inicio de fabricacion", e));
         } catch (RetryableException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible conectar con pedido-service al iniciar fabricaciÃ³n", e), e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible conectar con pedido-service al iniciar fabricacion", e), e);
         } catch (FeignException e) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible notificar a pedido-service", e), e);
         }
@@ -57,9 +57,9 @@ public class PedidoServiceClient {
         } catch (FeignException.NotFound e) {
             throw new PedidoNoEncontradoException("Pedido no encontrado al notificar: " + numeroPedido);
         } catch (FeignException.Conflict e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, buildMessage("pedido-service rechazÃ³ el cierre de fabricaciÃ³n", e), e);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, buildMessage("pedido-service rechaza el cierre de fabricacion", e), e);
         } catch (FeignException.BadRequest e) {
-            throw new FabricacionException(buildMessage("pedido-service rechazÃ³ el cambio de estado", e));
+            throw new FabricacionException(buildMessage("pedido-service rechaza el cambio de estado", e));
         } catch (RetryableException e) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible conectar con pedido-service al notificar", e), e);
         } catch (FeignException e) {

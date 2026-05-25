@@ -12,9 +12,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateEstadoFabricacionRequest {
+
     @NotNull(message = "El nuevo estado es obligatorio")
     private EstadoFabricacion nuevoEstado;
-
     private String motivo;
     private String usuarioId;
 }

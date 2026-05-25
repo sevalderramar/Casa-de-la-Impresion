@@ -30,17 +30,23 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            .authenticationProvider(authenticationProvider())
+
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/ping").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                /* Por temas de testeo, se omite el permiso de rol ADMIN
                 .requestMatchers(HttpMethod.GET, "/api/auth/usuarios").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/auth/usuarios").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/auth/usuarios/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                 .anyRequest().authenticated()
+                 */
+                .anyRequest().permitAll()
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

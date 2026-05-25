@@ -50,7 +50,7 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPedidosPorCliente(clienteId));
     }
 
-    @PatchMapping("/{numeroPedido}/estado")
+    @PostMapping("/{numeroPedido}/estado")
     public ResponseEntity<PedidoResponse> actualizarEstado(@PathVariable Long numeroPedido,
                                                             @Valid @RequestBody EstadoRequest request) {
         return ResponseEntity.ok(pedidoService.actualizarEstado(numeroPedido, request));

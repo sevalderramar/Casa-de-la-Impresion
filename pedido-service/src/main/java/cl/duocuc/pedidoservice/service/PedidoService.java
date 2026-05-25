@@ -70,6 +70,10 @@ public class PedidoService {
         pedido.getItems().addAll(items);
 
         Pedido guardado = pedidoRepository.save(pedido);
+        registrarCambioEstado(
+                guardado,
+                "SIN_ESTADO",
+                guardado.getEstado());
         cachePedidos.put(guardado.getNumeroPedido(), guardado);
         return convertirAResponse(guardado);
     }
@@ -162,6 +166,11 @@ public class PedidoService {
         } catch (FeignException.NotFound ex) {
             throw new ResourceNotFoundException("Cliente no encontrado con id: " + clienteId);
         } catch (FeignException ex) {
+            System.out.println("ERROR CLIENTE FEIGN");
+            System.out.println("STATUS: " + ex.status());
+            System.out.println("MENSAJE: " + ex.getMessage());
+            System.out.println("BODY: " + ex.contentUTF8());
+
             throw new ServiceUnavailableException("No se pudo conectar con el microservicio correspondiente", ex);
         }
     }
@@ -185,6 +194,11 @@ public class PedidoService {
         } catch (FeignException.NotFound ex) {
             throw new ResourceNotFoundException("Producto no encontrado con id: " + productoId);
         } catch (FeignException ex) {
+            System.out.println("ERROR PRODUCTO FEIGN");
+            System.out.println("STATUS: " + ex.status());
+            System.out.println("MENSAJE: " + ex.getMessage());
+            System.out.println("BODY: " + ex.contentUTF8());
+
             throw new ServiceUnavailableException("No se pudo conectar con el microservicio correspondiente", ex);
         }
     }
@@ -202,6 +216,12 @@ public class PedidoService {
         } catch (FeignException.NotFound ex) {
             throw new ResourceNotFoundException("No se pudo registrar el cambio de estado para el pedido: " + pedido.getNumeroPedido());
         } catch (FeignException ex) {
+
+            System.out.println("ERROR ESTADO FEIGN");
+            System.out.println("STATUS: " + ex.status());
+            System.out.println("MENSAJE: " + ex.getMessage());
+            System.out.println("BODY: " + ex.contentUTF8());
+
             throw new ServiceUnavailableException("No se pudo conectar con el microservicio correspondiente", ex);
         }
     }

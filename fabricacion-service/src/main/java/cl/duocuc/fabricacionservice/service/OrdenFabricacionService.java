@@ -63,7 +63,7 @@ public class OrdenFabricacionService {
         h.setEstadoAnterior(null);
         h.setEstadoNuevo(EstadoFabricacion.EN_PROCESO);
         h.setUsuarioId(request.getUsuarioResponsable());
-        h.setMotivo("Inicio de fabricaciÃ³n");
+        h.setMotivo("Inicio de fabricacion");
         historialRepository.save(h);
 
         pedidoServiceClient.notificarPedidoEnFabricacion(request.getNumeroPedido());

@@ -1,31 +1,38 @@
 package cl.duocuc.fabricacion.client;
 
 import cl.duocuc.fabricacion.dto.PedidoDTO;
-import cl.duocuc.fabricacion.dto.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "pedido-service", url = "${services.pedido.url}")
 public interface PedidoFeignClient {
 
     @GetMapping("/api/pedidos/{id}")
-    ApiResponse<PedidoDTO> obtenerPedido(@PathVariable("id") Long id);
+    PedidoDTO obtenerPedido(@PathVariable("id") Long id);
 
-    @PatchMapping("/api/pedidos/{id}/estado")
-    ApiResponse<PedidoDTO> actualizarEstado(@PathVariable("id") Long id,
-                               @RequestBody UpdateEstadoRequest request);
+    @PostMapping("/api/pedidos/{id}/estado")
+    PedidoDTO actualizarEstado(
+            @PathVariable("id") Long id,
+            @RequestBody UpdateEstadoRequest request
+    );
 
     class UpdateEstadoRequest {
-        private String nuevoEstado;
 
-        public UpdateEstadoRequest() {}
+        private String estado;
 
-        public UpdateEstadoRequest(String nuevoEstado) { this.nuevoEstado = nuevoEstado; }
+        public UpdateEstadoRequest() {
+        }
 
-        public String getNuevoEstado() { return nuevoEstado; }
-        public void setNuevoEstado(String nuevoEstado) { this.nuevoEstado = nuevoEstado; }
+        public UpdateEstadoRequest(String estado) {
+            this.estado = estado;
+        }
+
+        public String getEstado() {
+            return estado;
+        }
+
+        public void setEstado(String estado) {
+            this.estado = estado;
+        }
     }
 }

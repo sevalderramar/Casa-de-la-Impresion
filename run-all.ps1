@@ -1,4 +1,4 @@
-$env:JWT_SECRET="mi-clave-super-secreta-2026"
+$env:JWT_SECRET="dHVjbGF2ZXNlY3JldGFkZWJlc2VybXV5bGFyZ2FwYXJhcXVlc2VhcnNlZ3VyYQ=="
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd pedido-service; .\mvnw spring-boot:run"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd cliente-service; .\mvnw spring-boot:run"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd producto-service; .\mvnw spring-boot:run"
@@ -8,4 +8,4 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd estado-service
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd metrica-service; .\mvnw spring-boot:run"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd transportista-service; .\mvnw spring-boot:run"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd log-service; .\mvnw spring-boot:run"
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd auth-service; .\mvnw spring-boot:run"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "echo JWT_SECRET=$env:JWT_SECRET; cd auth-service; .\mvnw spring-boot:run"
