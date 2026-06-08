@@ -36,7 +36,7 @@ public class MetricaServiceImpl implements MetricaService {
         
         String nombreCliente = obtenerNombreClienteConFallback(clienteId);
 
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(clienteId, null, null);
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidosPorCliente(clienteId);
         if (pedidos == null) {
             pedidos = new ArrayList<>();
         }
@@ -71,7 +71,7 @@ public class MetricaServiceImpl implements MetricaService {
     @Override
     public List<MetricaClienteResponseDTO> obtenerRankingClientes(Integer limite) {
         log.info("Generando ranking de clientes, limite={}", limite);
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, null, null);
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, null);
         if (pedidos == null) pedidos = new ArrayList<>();
 
         Map<Long, Double> montoPorCliente = pedidos.stream()
@@ -96,7 +96,7 @@ public class MetricaServiceImpl implements MetricaService {
     @Override
     public List<MetricaProductoResponseDTO> obtenerTopProductos(LocalDate desde, LocalDate hasta, Integer limite) {
         log.info("Generando top productos desde={} hasta={}, limite={}", desde, hasta, limite);
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, desde, hasta);
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(desde, hasta);
         if (pedidos == null) pedidos = new ArrayList<>();
 
         Map<Long, Integer> cantidadPorProducto = new HashMap<>();
@@ -139,7 +139,7 @@ public class MetricaServiceImpl implements MetricaService {
     @Override
     public ResumenVentasResponseDTO obtenerResumenVentas(LocalDate desde, LocalDate hasta) {
         log.info("Generando resumen de ventas desde={} hasta={}", desde, hasta);
-        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(null, desde, hasta);
+        List<PedidoResponseDTO> pedidos = pedidoFeignClient.listarPedidos(desde, hasta);
         if (pedidos == null) pedidos = new ArrayList<>();
 
         double montoTotal = pedidos.stream().mapToDouble(PedidoResponseDTO::getMonto).sum();
