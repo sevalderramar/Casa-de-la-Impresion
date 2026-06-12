@@ -8,10 +8,12 @@ import cl.duocuc.pedidoservice.service.PedidoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Pedidos", description = "Operaciones relacionadas con pedidos")
 @RestController
 @RequestMapping("/api/pedidos")
 public class PedidoController {
@@ -67,4 +69,13 @@ public class PedidoController {
         pedidoService.eliminarPedido(numeroPedido);
         return ResponseEntity.noContent().build();
     }
+
+
+
+
+
+
+
+
+
 }
