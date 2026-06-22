@@ -110,7 +110,7 @@ cd .\log-service
 ## 16. Como ejecutar desde terminal
 ```powershell
 cd .\log-service
-$env:JWT_SECRET="tu-secreto-base64-aqui"
+$env:JWT_SECRET="<TU_JWT_SECRET_BASE64>"
 .\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
@@ -122,7 +122,7 @@ $env:JWT_SECRET="tu-secreto-base64-aqui"
    - Create new → Spring Boot
    - Name: `log-service`
    - Main class: `cl.duocuc.logservice.LogServiceApplication`
-   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Enviroment variables: `JWT_SECRET=<TU_JWT_SECRET_BASE64>`
    - Active profiles: `h2`
 3. **Ejecutar**: Run (▶) o Shift+F10
 4. **Verificar**: `http://localhost:8089/h2-console`

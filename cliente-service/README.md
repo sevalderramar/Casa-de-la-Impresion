@@ -34,6 +34,10 @@ Microservicio para administracion de clientes.
 ## 8. H2 Console
 - URL: `http://localhost:8082/h2-console`
 
+## 8.1 Swagger/OpenAPI
+- URL: `http://localhost:8082/swagger-ui/index.html`
+- Documentación estándar: `http://localhost:8082/v3/api-docs`
+
 ## 9. Variables de entorno requeridas
 | Variable | Requerida | Descripcion |
 |---|---|---|
@@ -94,7 +98,7 @@ Authorization: Bearer <TOKEN_JWT>
 `cliente-service` gestiona el ciclo completo de vida de los clientes en el sistema Casa de la Impresión:
 
 - **Registro**: Permite crear nuevos clientes con validaciones de RUT, email único y datos requeridos.
-- **Consulta**: Búsqueda por ID, RUT, con caché en memoria para optimizar lecturasrepetidas.
+- **Consulta**: Búsqueda por ID, RUT, con caché en memoria para optimizar lecturas repetidas.
 - **Actualización**: Modifica datos de clientes existentes.
 - **Eliminación**: Borra registros de clientes (soft o hard delete según configuración).
 - **Búsqueda por RUT**: Valida y busca usando el Rut del cliente, normalizado internamente.
@@ -110,7 +114,7 @@ cd .\cliente-service
 ## 16. Como ejecutar desde terminal
 ```powershell
 cd .\cliente-service
-$env:JWT_SECRET="tu-secreto-base64-aqui"
+$env:JWT_SECRET="<TU_JWT_SECRET_BASE64>"
 .\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
@@ -122,7 +126,7 @@ $env:JWT_SECRET="tu-secreto-base64-aqui"
    - Create new → Spring Boot
    - Name: `cliente-service`
    - Main class: `cl.duocuc.clienteservice.ClienteServiceApplication`
-   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Enviroment variables: `JWT_SECRET=<TU_JWT_SECRET_BASE64>`
    - Active profiles: `h2`
 3. **Ejecutar**: Presiona Run (▶) o Shift+F10
 4. **Verificar**: Navega a `http://localhost:8082/h2-console`

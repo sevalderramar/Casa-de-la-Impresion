@@ -102,7 +102,7 @@ cd .\estado-service
 ## 16. Como ejecutar desde terminal
 ```powershell
 cd .\estado-service
-$env:JWT_SECRET="tu-secreto-base64-aqui"
+$env:JWT_SECRET="<TU_JWT_SECRET_BASE64>"
 .\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
@@ -114,7 +114,7 @@ $env:JWT_SECRET="tu-secreto-base64-aqui"
    - Create new → Spring Boot
    - Name: `estado-service`
    - Main class: `cl.duocuc.estadoservice.EstadoServiceApplication`
-   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Enviroment variables: `JWT_SECRET=<TU_JWT_SECRET_BASE64>`
    - Active profiles: `h2`
 3. **Ejecutar**: Run (▶) o Shift+F10
 4. **Verificar**: `http://localhost:8086/h2-console`
@@ -267,7 +267,7 @@ ENTREGADO
 - Todos los endpoints de negocio requieren JWT válido.
 - Cada cambio de estado se registra con timestamp automático.
 - El campo `observacion` permite documentar detalles del cambio.
-- No se validadas transiciones descendentes (se permite cualquier cambio).
+- No se validan transiciones descendentes (se permite cualquier cambio).
 
 ## 23. Estado actual del servicio
 - ✅ Compila correctamente con Java 21 y Spring Boot 4.0.5.

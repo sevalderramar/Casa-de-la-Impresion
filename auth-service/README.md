@@ -93,7 +93,8 @@ Authorization: Bearer <TOKEN_JWT>
 ## 14. Comunicacion Feign si aplica
 Este servicio incluye OpenFeign en dependencias, pero su rol principal es emision/validacion de JWT y gestion de usuarios.
 
-## 15. Manejo global de errores Lesson 18
+## 15. Manejo global de errores
+
 `GlobalExceptionHandler` centraliza:
 - `ResourceNotFoundException` -> 404
 - `ConflictException` -> 409
@@ -128,7 +129,7 @@ cd .\auth-service
 ## 18. Como ejecutar desde terminal
 ```powershell
 cd .\auth-service
-$env:JWT_SECRET="tu-secreto-base64-aqui"
+$env:JWT_SECRET="<TU_JWT_SECRET_BASE64>"
 .\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
@@ -140,7 +141,7 @@ $env:JWT_SECRET="tu-secreto-base64-aqui"
    - Create new → Spring Boot
    - Name: `auth-service`
    - Main class: `cl.duocuc.authservice.AuthServiceApplication`
-   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Enviroment variables: `JWT_SECRET=<TU_JWT_SECRET_BASE64>`
    - Active profiles: `h2`
 3. **Ejecutar**: Presiona el botón "Run" (▶) o Shift+F10
 4. **Verificar**: Abre navegador en `http://localhost:8090/h2-console`

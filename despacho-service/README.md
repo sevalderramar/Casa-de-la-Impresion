@@ -34,6 +34,10 @@ Microservicio para registrar y administrar despachos de pedidos.
 ## 8. H2 Console
 - URL: `http://localhost:8084/h2-console`
 
+## 8.1 Swagger/OpenAPI
+- URL: `http://localhost:8084/swagger-ui/index.html`
+- Documentación estándar: `http://localhost:8084/v3/api-docs`
+
 ## 9. Variables de entorno requeridas
 | Variable | Requerida | Descripcion |
 |---|---|---|
@@ -103,7 +107,7 @@ cd .\despacho-service
 ## 16. Como ejecutar desde terminal
 ```powershell
 cd .\despacho-service
-$env:JWT_SECRET="tu-secreto-base64-aqui"
+$env:JWT_SECRET="<TU_JWT_SECRET_BASE64>"
 .\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
@@ -116,7 +120,7 @@ $env:JWT_SECRET="tu-secreto-base64-aqui"
    - Create new → Spring Boot
    - Name: `despacho-service`
    - Main class: `cl.duocuc.despachoservice.DespachoServiceApplication`
-   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Enviroment variables: `JWT_SECRET=<TU_JWT_SECRET_BASE64>`
    - Active profiles: `h2`
 4. **Ejecutar**: Run (▶) o Shift+F10
 5. **Verificar**: `http://localhost:8084/h2-console`

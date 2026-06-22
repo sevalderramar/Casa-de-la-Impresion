@@ -35,6 +35,10 @@ Microservicio para crear y actualizar ordenes de fabricacion vinculadas a pedido
 ## 8. H2 Console
 - URL: `http://localhost:8085/h2-console`
 
+## 8.1 Swagger/OpenAPI
+- URL: `http://localhost:8085/swagger-ui/index.html`
+- Documentación estándar: `http://localhost:8085/v3/api-docs`
+
 ## 9. Variables de entorno requeridas
 | Variable | Requerida | Descripcion |
 |---|---|---|
@@ -98,7 +102,7 @@ Authorization: Bearer <TOKEN_JWT>
 - **Estados**: Transita entre EN_PROCESO → EN_PAUSA → COMPLETADO.
 - **Historial**: Mantiene registro de todos los cambios de estado.
 - **Notificación**: Informa a `pedido-service` el progreso de fabricación.
-- **Validaciónde Pedidos**: Verifica que el pedido exista antes de crear orden.
+- **Validación de Pedidos**: Verifica que el pedido exista antes de crear orden.
 
 Este servicio es usado por el área de producción para trackear órdenes de fabricación.
 
@@ -111,7 +115,7 @@ cd .\fabricacion-service
 ## 16. Como ejecutar desde terminal
 ```powershell
 cd .\fabricacion-service
-$env:JWT_SECRET="tu-secreto-base64-aqui"
+$env:JWT_SECRET="<TU_JWT_SECRET_BASE64>"
 .\mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=h2"
 ```
 
@@ -124,7 +128,7 @@ $env:JWT_SECRET="tu-secreto-base64-aqui"
    - Create new → Spring Boot
    - Name: `fabricacion-service`
    - Main class: `cl.duocuc.fabricacion.FabricacionServiceApplication`
-   - Enviroment variables: `JWT_SECRET=tu-secreto-base64`
+   - Enviroment variables: `JWT_SECRET=<TU_JWT_SECRET_BASE64>`
    - Active profiles: `h2`
 4. **Ejecutar**: Run (▶) o Shift+F10
 5. **Verificar**: `http://localhost:8085/h2-console`
