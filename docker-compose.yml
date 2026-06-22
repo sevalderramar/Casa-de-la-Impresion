@@ -1,0 +1,83 @@
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: h2
+      PEDIDO_SERVICE_URL: http://pedido-service:8081
+      CLIENTE_SERVICE_URL: http://cliente-service:8082
+      PRODUCTO_SERVICE_URL: http://producto-service:8083
+      ESTADO_SERVICE_URL: http://estado-service:8086
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pedido-service
+      - cliente-service
+      - producto-service
+      - estado-service
+
+  pedido-service:
+    build:
+      context: ./pedido-service
+    container_name: pedido-service
+    environment:
+      SPRING_PROFILES_ACTIVE: h2
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      CLIENTE_SERVICE_URL: http://cliente-service:8082
+      PRODUCTO_SERVICE_URL: http://producto-service:8083
+      ESTADO_SERVICE_URL: http://estado-service:8086
+    ports:
+      - "8081:8081"
+    volumes:
+      - pedido-data:/app/data
+    depends_on:
+      - cliente-service
+      - producto-service
+      - estado-service
+
+  cliente-service:
+    build:
+      context: ./cliente-service
+    container_name: cliente-service
+    environment:
+      SPRING_PROFILES_ACTIVE: h2
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+    ports:
+      - "8082:8082"
+    volumes:
+      - cliente-data:/app/data
+
+  producto-service:
+    build:
+      context: ./producto-service
+    container_name: producto-service
+    environment:
+      SPRING_PROFILES_ACTIVE: h2
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+    ports:
+      - "8083:8083"
+    volumes:
+      - producto-data:/app/data
+
+  estado-service:
+    build:
+      context: ./estado-service
+    container_name: estado-service
+    environment:
+      SPRING_PROFILES_ACTIVE: h2
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+    expose:
+      - "8086"
+    volumes:
+      - estado-data:/app/data
+
+volumes:
+  pedido-data:
+  cliente-data:
+  producto-data:
+  estado-data:
