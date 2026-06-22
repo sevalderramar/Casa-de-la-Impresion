@@ -7,7 +7,6 @@ import cl.duocuc.fabricacion.dto.UpdateEstadoFabricacionRequest;
 import cl.duocuc.fabricacion.service.OrdenFabricacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,7 +26,7 @@ public class OrdenFabricacionController {
 
     @GetMapping("/ping")
     @Operation(summary = "Healthcheck de fabricación", description = "Verifica que el servicio esté operativo")
-    @ApiResponses(@ApiResponse(responseCode = "200", description = "Servicio activo"))
+    @ApiResponses(@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Servicio activo"))
     public ResponseEntity<ApiResponse<String>> ping() {
         return ResponseEntity.ok(ApiResponse.success("pong", "fabricacion-service"));
     }
@@ -35,11 +34,11 @@ public class OrdenFabricacionController {
     @PostMapping
     @Operation(summary = "Crear orden de fabricación", description = "Registra una nueva orden asociada a un pedido existente")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Orden creada"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
-            @ApiResponse(responseCode = "409", description = "Orden duplicada"),
-            @ApiResponse(responseCode = "503", description = "Servicio de pedidos no disponible")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Orden creada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Orden duplicada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "503", description = "Servicio de pedidos no disponible")
     })
     public ResponseEntity<ApiResponse<OrdenFabricacionResponse>> crearOrden(@Valid @RequestBody OrdenFabricacionRequest request) {
         OrdenFabricacionResponse resp = ordenService.crearOrden(request);
@@ -49,8 +48,8 @@ public class OrdenFabricacionController {
     @GetMapping("/{id}")
     @Operation(summary = "Consultar orden de fabricación", description = "Obtiene una orden por su identificador")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Orden encontrada"),
-            @ApiResponse(responseCode = "404", description = "Orden no encontrada")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Orden encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Orden no encontrada")
     })
     public ResponseEntity<ApiResponse<OrdenFabricacionResponse>> obtenerOrden(@Parameter(description = "ID de la orden") @PathVariable Long id) {
         OrdenFabricacionResponse resp = ordenService.obtenerOrden(id);
@@ -60,11 +59,11 @@ public class OrdenFabricacionController {
     @PatchMapping("/{id}/estado")
     @Operation(summary = "Actualizar estado de fabricación", description = "Cambia el estado de una orden de fabricación")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Estado actualizado"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "404", description = "Orden no encontrada"),
-            @ApiResponse(responseCode = "409", description = "Conflicto de estado"),
-            @ApiResponse(responseCode = "503", description = "Servicio de pedidos no disponible")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Estado actualizado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Orden no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Conflicto de estado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "503", description = "Servicio de pedidos no disponible")
     })
     public ResponseEntity<ApiResponse<OrdenFabricacionResponse>> actualizarEstado(
             @Parameter(description = "ID de la orden") @PathVariable Long id,
@@ -73,4 +72,3 @@ public class OrdenFabricacionController {
         return ResponseEntity.ok(ApiResponse.success("Estado actualizado", resp));
     }
 }
-
