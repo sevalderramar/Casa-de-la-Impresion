@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDate;
 import java.util.List;
 
-@FeignClient(name = "pedido-service", url = "${pedido.service.url}")
+@FeignClient(name = "pedido-service", url = "${services.pedido.url}")
 public interface PedidoFeignClient {
 
     @GetMapping("/api/pedidos")
