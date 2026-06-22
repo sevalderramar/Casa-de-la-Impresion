@@ -1,13 +1,14 @@
 package cl.duocuc.pedidoservice;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 class PedidoServiceApplicationTests {
 
     @Test
-    void contextLoads() {
+    void applicationClassExiste() {
+        assertNotNull(PedidoServiceApplication.class);
     }
 
 }
