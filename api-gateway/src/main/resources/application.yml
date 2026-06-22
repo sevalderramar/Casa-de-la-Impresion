@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: http://localhost:8090
+              predicates:
+                - Path=/api/auth/**
+            - id: pedido-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/pedidos/**
+            - id: cliente-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/clientes/**
+            - id: producto-service
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/productos/**
+            - id: despacho-service
+              uri: http://localhost:8084
+              predicates:
+                - Path=/api/despachos/**
+            - id: fabricacion-service
+              uri: http://localhost:8085
+              predicates:
+                - Path=/api/fabricacion/**
+            - id: estado-service
+              uri: http://localhost:8086
+              predicates:
+                - Path=/api/estados/**
+            - id: metrica-service
+              uri: http://localhost:8087
+              predicates:
+                - Path=/api/metricas/**
+            - id: transportista-service
+              uri: http://localhost:8088
+              predicates:
+                - Path=/api/transportistas/**
+            - id: log-service
+              uri: http://localhost:8089
+              predicates:
+                - Path=/api/logs/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
