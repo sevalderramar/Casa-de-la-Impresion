@@ -14,10 +14,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -98,6 +100,107 @@ class ProductoServiceTest {
     }
 
     @Test
+    void crearProductoCuandoPrecioEsNullLanzaConflictException() {
+        // Given
+        ProductoRequest request = request("Resma Carta Blanca", "Papel blanco", "Papel", null, 120);
+        when(productoRepository.existsByNombreIgnoreCase("Resma Carta Blanca")).thenReturn(false);
+
+        // When / Then
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> productoService.crearProducto(request)
+        );
+        assertEquals("El precio debe ser mayor a 0", exception.getMessage());
+        verify(productoRepository).existsByNombreIgnoreCase("Resma Carta Blanca");
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void crearProductoCuandoPrecioEsCeroLanzaConflictException() {
+        // Given
+        ProductoRequest request = request("Resma Carta Blanca", "Papel blanco", "Papel", 0.0, 120);
+        when(productoRepository.existsByNombreIgnoreCase("Resma Carta Blanca")).thenReturn(false);
+
+        // When / Then
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> productoService.crearProducto(request)
+        );
+        assertEquals("El precio debe ser mayor a 0", exception.getMessage());
+        verify(productoRepository).existsByNombreIgnoreCase("Resma Carta Blanca");
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void crearProductoCuandoStockEsNullLanzaConflictException() {
+        // Given
+        ProductoRequest request = request("Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, null);
+        when(productoRepository.existsByNombreIgnoreCase("Resma Carta Blanca")).thenReturn(false);
+
+        // When / Then
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> productoService.crearProducto(request)
+        );
+        assertEquals("El stock no puede ser negativo", exception.getMessage());
+        verify(productoRepository).existsByNombreIgnoreCase("Resma Carta Blanca");
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void crearProductoCuandoStockEsNegativoLanzaConflictException() {
+        // Given
+        ProductoRequest request = request("Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, -1);
+        when(productoRepository.existsByNombreIgnoreCase("Resma Carta Blanca")).thenReturn(false);
+
+        // When / Then
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> productoService.crearProducto(request)
+        );
+        assertEquals("El stock no puede ser negativo", exception.getMessage());
+        verify(productoRepository).existsByNombreIgnoreCase("Resma Carta Blanca");
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void crearProductoPermiteDescripcionNull() {
+        // Given
+        ProductoRequest request = request("Resma Carta Blanca", null, "Papel", 3500.0, 120);
+        when(productoRepository.existsByNombreIgnoreCase("Resma Carta Blanca")).thenReturn(false);
+        when(productoRepository.save(any(Producto.class))).thenAnswer(invocation -> {
+            Producto producto = invocation.getArgument(0);
+            producto.setId(10L);
+            return producto;
+        });
+
+        // When
+        ProductoResponse response = productoService.crearProducto(request);
+
+        // Then
+        assertEquals(10L, response.getId());
+        assertNull(response.getDescripcion());
+        verify(productoRepository).existsByNombreIgnoreCase("Resma Carta Blanca");
+        verify(productoRepository).save(any(Producto.class));
+    }
+
+    @Test
+    void listarProductosRetornaProductosDelRepositorio() {
+        // Given
+        Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
+        when(productoRepository.findAll()).thenReturn(List.of(producto));
+
+        // When
+        List<ProductoResponse> responses = productoService.listarProductos();
+
+        // Then
+        assertEquals(1, responses.size());
+        assertEquals(10L, responses.get(0).getId());
+        assertEquals("Resma Carta Blanca", responses.get(0).getNombre());
+        verify(productoRepository).findAll();
+    }
+
+    @Test
     void obtenerProductoPorIdCuandoExisteRetornaProducto() {
         // Given
         Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
@@ -133,6 +236,63 @@ class ProductoServiceTest {
     }
 
     @Test
+    void buscarPorNombreCuandoExisteRetornaProducto() {
+        // Given
+        Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
+        when(productoRepository.findByNombreIgnoreCase("Resma Carta Blanca")).thenReturn(Optional.of(producto));
+
+        // When
+        ProductoResponse response = productoService.buscarPorNombre(" Resma Carta Blanca ");
+
+        // Then
+        assertEquals(10L, response.getId());
+        assertEquals("Resma Carta Blanca", response.getNombre());
+        verify(productoRepository).findByNombreIgnoreCase("Resma Carta Blanca");
+    }
+
+    @Test
+    void buscarPorNombreCuandoNoExisteLanzaResourceNotFoundException() {
+        // Given
+        when(productoRepository.findByNombreIgnoreCase("Resma Carta Blanca")).thenReturn(Optional.empty());
+
+        // When / Then
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> productoService.buscarPorNombre(" Resma Carta Blanca ")
+        );
+        assertEquals("Producto no encontrado con nombre Resma Carta Blanca", exception.getMessage());
+        verify(productoRepository).findByNombreIgnoreCase("Resma Carta Blanca");
+    }
+
+    @Test
+    void listarPorCategoriaRetornaProductosDelRepositorio() {
+        // Given
+        Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
+        when(productoRepository.findByCategoriaIgnoreCase("Papel")).thenReturn(List.of(producto));
+
+        // When
+        List<ProductoResponse> responses = productoService.listarPorCategoria(" Papel ");
+
+        // Then
+        assertEquals(1, responses.size());
+        assertEquals("Papel", responses.get(0).getCategoria());
+        verify(productoRepository).findByCategoriaIgnoreCase("Papel");
+    }
+
+    @Test
+    void listarPorCategoriaRetornaListaVaciaCuandoRepositorioNoEncuentraProductos() {
+        // Given
+        when(productoRepository.findByCategoriaIgnoreCase("Papel")).thenReturn(List.of());
+
+        // When
+        List<ProductoResponse> responses = productoService.listarPorCategoria(" Papel ");
+
+        // Then
+        assertEquals(0, responses.size());
+        verify(productoRepository).findByCategoriaIgnoreCase("Papel");
+    }
+
+    @Test
     void actualizarProductoCuandoDatosValidosGuardaYRetornaProductoActualizado() {
         // Given
         Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
@@ -163,6 +323,63 @@ class ProductoServiceTest {
     }
 
     @Test
+    void actualizarProductoCuandoMantieneMismoNombreNoConsultaDuplicado() {
+        // Given
+        Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
+        ProductoRequest request = request(" resma carta blanca ", "Papel blanco actualizado", "Papel", 3600.0, 100);
+        when(productoRepository.findById(10L)).thenReturn(Optional.of(producto));
+        when(productoRepository.save(producto)).thenReturn(producto);
+
+        // When
+        ProductoResponse response = productoService.actualizarProducto(10L, request);
+
+        // Then
+        assertEquals("resma carta blanca", response.getNombre());
+        assertEquals("Papel blanco actualizado", response.getDescripcion());
+        assertEquals(3600.0, response.getPrecio());
+        assertEquals(100, response.getStock());
+        verify(productoRepository).findById(10L);
+        verify(productoRepository, never()).existsByNombreIgnoreCase(anyString());
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void actualizarProductoCuandoNoExisteLanzaResourceNotFoundException() {
+        // Given
+        ProductoRequest request = request("Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
+        when(productoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // When / Then
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> productoService.actualizarProducto(99L, request)
+        );
+        assertEquals("Producto no encontrado con ID 99", exception.getMessage());
+        verify(productoRepository).findById(99L);
+        verify(productoRepository, never()).existsByNombreIgnoreCase(anyString());
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
+    void actualizarProductoCuandoNuevoNombreYaExisteLanzaConflictException() {
+        // Given
+        Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
+        ProductoRequest request = request("Resma Oficio Blanca", "Papel oficio", "Oficina", 4200.0, 80);
+        when(productoRepository.findById(10L)).thenReturn(Optional.of(producto));
+        when(productoRepository.existsByNombreIgnoreCase("Resma Oficio Blanca")).thenReturn(true);
+
+        // When / Then
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                () -> productoService.actualizarProducto(10L, request)
+        );
+        assertEquals("Ya existe otro producto con nombre Resma Oficio Blanca", exception.getMessage());
+        verify(productoRepository).findById(10L);
+        verify(productoRepository).existsByNombreIgnoreCase("Resma Oficio Blanca");
+        verify(productoRepository, never()).save(any(Producto.class));
+    }
+
+    @Test
     void eliminarProductoCuandoExisteEliminaProducto() {
         // Given
         Producto producto = producto(10L, "Resma Carta Blanca", "Papel blanco", "Papel", 3500.0, 120);
@@ -174,6 +391,25 @@ class ProductoServiceTest {
         // Then
         verify(productoRepository).findById(10L);
         verify(productoRepository).delete(producto);
+    }
+
+    @Test
+    void eliminarProductoCuandoNoExisteLanzaResourceNotFoundException() {
+        // Given
+        when(productoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // When / Then
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> productoService.eliminarProducto(99L)
+        );
+        assertEquals("Producto no encontrado con ID 99", exception.getMessage());
+        verify(productoRepository).findById(99L);
+        verify(productoRepository, never()).delete(any(Producto.class));
+    }
+
+    private ProductoRequest request(String nombre, String descripcion, String categoria, Double precio, Integer stock) {
+        return new ProductoRequest(nombre, descripcion, categoria, precio, stock);
     }
 
     private Producto producto(Long id, String nombre, String descripcion, String categoria, Double precio, Integer stock) {
