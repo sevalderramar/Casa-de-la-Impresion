@@ -37,6 +37,8 @@ public class OrdenFabricacionService {
             pedidoServiceClient.validarExistencia(request.getNumeroPedido());
         } catch (PedidoNoEncontradoException e) {
             throw e;
+        } catch (ServiceUnavailableException e) {
+            throw e;
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {

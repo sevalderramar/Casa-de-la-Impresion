@@ -2,6 +2,7 @@ package cl.duocuc.fabricacion.client;
 
 import cl.duocuc.fabricacion.exception.FabricacionException;
 import cl.duocuc.fabricacion.exception.PedidoNoEncontradoException;
+import cl.duocuc.fabricacion.exception.ServiceUnavailableException;
 import feign.FeignException;
 import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +24,13 @@ public class PedidoServiceClient {
         } catch (FeignException.BadRequest e) {
             throw new FabricacionException(buildMessage("pedido-service rechaza la solicitud", e));
         } catch (FeignException.Unauthorized | FeignException.Forbidden e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "pedido-service no permite la validacion", e);
+            throw new ServiceUnavailableException("pedido-service no permite la validacion", e);
         } catch (RetryableException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible conectar con pedido-service", e), e);
+            throw new ServiceUnavailableException(buildMessage("No fue posible conectar con pedido-service", e), e);
         } catch (FeignException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible comunicarse con pedido-service", e), e);
+            throw new ServiceUnavailableException(buildMessage("No fue posible comunicarse con pedido-service", e), e);
         } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Error inesperado al validar el pedido", e);
+            throw new ServiceUnavailableException("Error inesperado al validar el pedido", e);
         }
     }
 
@@ -44,9 +45,9 @@ public class PedidoServiceClient {
         } catch (FeignException.BadRequest e) {
             throw new FabricacionException(buildMessage("pedido-service rechaza el inicio de fabricacion", e));
         } catch (RetryableException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible conectar con pedido-service al iniciar fabricacion", e), e);
+            throw new ServiceUnavailableException(buildMessage("No fue posible conectar con pedido-service al iniciar fabricacion", e), e);
         } catch (FeignException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible notificar a pedido-service", e), e);
+            throw new ServiceUnavailableException(buildMessage("No fue posible notificar a pedido-service", e), e);
         }
     }
 
@@ -61,11 +62,11 @@ public class PedidoServiceClient {
         } catch (FeignException.BadRequest e) {
             throw new FabricacionException(buildMessage("pedido-service rechaza el cambio de estado", e));
         } catch (RetryableException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible conectar con pedido-service al notificar", e), e);
+            throw new ServiceUnavailableException(buildMessage("No fue posible conectar con pedido-service al notificar", e), e);
         } catch (FeignException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, buildMessage("No fue posible notificar a pedido-service", e), e);
+            throw new ServiceUnavailableException(buildMessage("No fue posible notificar a pedido-service", e), e);
         } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Error inesperado al notificar el pedido", e);
+            throw new ServiceUnavailableException("Error inesperado al notificar el pedido", e);
         }
     }
 
