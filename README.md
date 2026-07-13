@@ -1,6 +1,6 @@
 # Casa de la Impresion - Microservicios
 
-Sistema backend para la gestion de pedidos de Casa de la Impresion. El proyecto esta organizado como una arquitectura de microservicios Spring Boot con API Gateway, persistencia H2 para desarrollo local, seguridad JWT, comunicacion REST/OpenFeign, documentacion Swagger/OpenAPI en servicios especificos y una demo Docker minima para los servicios principales del flujo de pedidos.
+Sistema backend para la gestion de pedidos de Casa de la Impresion. El proyecto esta organizado como una arquitectura de microservicios Spring Boot con API Gateway, persistencia H2 para desarrollo local, seguridad JWT, comunicacion REST/OpenFeign, documentacion Swagger/OpenAPI en los 10 microservicios de dominio y una demo Docker minima para los servicios principales del flujo de pedidos.
 
 ## Arquitectura
 
@@ -19,6 +19,20 @@ El sistema se compone de 10 microservicios de dominio mas un `api-gateway`. Cada
 | transportista-service | 8088 | Gestion de transportistas |
 | log-service | 8089 | Registro de logs |
 | auth-service | 8090 | Autenticacion JWT y usuarios |
+
+## Estado Final Para Defensa
+
+Auditoria final del proyecto completo:
+
+| Evidencia | Resultado |
+|---|---:|
+| Tests automatizados pasando | 452 |
+| Microservicios con JaCoCo configurado | 10 |
+| Microservicios sobre 80% de cobertura de lineas | 10 |
+| Microservicios con Swagger/OpenAPI | 10 |
+| API Gateway compilando | Si |
+
+Nota sobre `api-gateway`: el gateway compila correctamente y enruta hacia los microservicios, pero no se cuenta dentro de los 10 microservicios de dominio para JaCoCo, cobertura ni Swagger. Su responsabilidad es de infraestructura/enrutamiento y no expone controladores de negocio propios.
 
 ## API Gateway
 
@@ -195,33 +209,70 @@ Credenciales H2 de desarrollo:
 
 ## Swagger/OpenAPI
 
-Swagger/OpenAPI esta configurado en los servicios donde existe `OpenApiConfig` y dependencia Springdoc. No se afirma cobertura completa en todos los microservicios.
+Swagger/OpenAPI esta configurado en los 10 microservicios de dominio mediante Springdoc y `OpenApiConfig`. Cada controller principal tiene `@Tag` y sus endpoints tienen `@Operation`.
 
-Servicios con Swagger documentado en el proyecto:
+URLs esperadas con los servicios levantados localmente:
 
 | Servicio | Swagger UI | API Docs |
 |---|---|---|
-| pedido-service | `http://localhost:8081/swagger-ui/index.html` | `http://localhost:8081/v3/api-docs` |
+| auth-service | `http://localhost:8090/swagger-ui/index.html` | `http://localhost:8090/v3/api-docs` |
 | cliente-service | `http://localhost:8082/swagger-ui/index.html` | `http://localhost:8082/v3/api-docs` |
 | producto-service | `http://localhost:8083/swagger-ui/index.html` | `http://localhost:8083/v3/api-docs` |
+| pedido-service | `http://localhost:8081/swagger-ui/index.html` | `http://localhost:8081/v3/api-docs` |
+| estado-service | `http://localhost:8086/swagger-ui/index.html` | `http://localhost:8086/v3/api-docs` |
 | despacho-service | `http://localhost:8084/swagger-ui/index.html` | `http://localhost:8084/v3/api-docs` |
 | fabricacion-service | `http://localhost:8085/swagger-ui/index.html` | `http://localhost:8085/v3/api-docs` |
 | metrica-service | `http://localhost:8087/swagger-ui/index.html` | `http://localhost:8087/v3/api-docs` |
+| transportista-service | `http://localhost:8088/swagger-ui/index.html` | `http://localhost:8088/v3/api-docs` |
+| log-service | `http://localhost:8089/swagger-ui/index.html` | `http://localhost:8089/v3/api-docs` |
 
 ## Tests
 
-Existen pruebas unitarias con JUnit 5 y Mockito para:
+La suite final tiene 452 tests pasando. Los 10 microservicios de dominio tienen JaCoCo configurado y superan 80% de cobertura de lineas.
 
-- `cliente-service`
-- `producto-service`
-- `pedido-service`
+Resumen por modulo:
 
-Ejemplo de ejecucion:
+| Servicio | Tests | Cobertura lineas | JaCoCo |
+|---|---:|---:|---|
+| auth-service | 50 | 86.38% | Si |
+| cliente-service | 36 | 83.33% | Si |
+| producto-service | 42 | 86.39% | Si |
+| pedido-service | 44 | 83.67% | Si |
+| estado-service | 33 | 91.97% | Si |
+| despacho-service | 48 | 95.88% | Si |
+| fabricacion-service | 76 | 96.76% | Si |
+| metrica-service | 46 | 92.82% | Si |
+| transportista-service | 40 | 90.65% | Si |
+| log-service | 37 | 91.22% | Si |
+| api-gateway | 0 | N/A | No |
 
-```powershell
-cd producto-service
-.\mvnw test
-```
+Comandos para generar evidencias de build, tests y cobertura:
+
+| Evidencia | Comando |
+|---|---|
+| Estado Git | `git status` |
+| Historial reciente | `git log --oneline -12` |
+| Build auth-service | `cd auth-service; .\mvnw.cmd clean verify` |
+| Build cliente-service | `cd cliente-service; .\mvnw.cmd clean verify` |
+| Build producto-service | `cd producto-service; .\mvnw.cmd clean verify` |
+| Build pedido-service | `cd pedido-service; .\mvnw.cmd clean verify` |
+| Build estado-service | `cd estado-service; .\mvnw.cmd clean verify` |
+| Build despacho-service | `cd despacho-service; .\mvnw.cmd clean verify` |
+| Build fabricacion-service | `cd fabricacion-service; .\mvnw.cmd clean verify` |
+| Build metrica-service | `cd metrica-service; .\mvnw.cmd clean verify` |
+| Build transportista-service | `cd transportista-service; .\mvnw.cmd clean verify` |
+| Build log-service | `cd log-service; .\mvnw.cmd clean verify` |
+| Build api-gateway | `cd api-gateway; .\mvnw.cmd clean verify` |
+| Reporte JaCoCo auth-service | `Start-Process auth-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo cliente-service | `Start-Process cliente-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo producto-service | `Start-Process producto-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo pedido-service | `Start-Process pedido-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo estado-service | `Start-Process estado-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo despacho-service | `Start-Process despacho-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo fabricacion-service | `Start-Process fabricacion-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo metrica-service | `Start-Process metrica-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo transportista-service | `Start-Process transportista-service\target\site\jacoco\index.html` |
+| Reporte JaCoCo log-service | `Start-Process log-service\target\site\jacoco\index.html` |
 
 ## Tecnologias
 
@@ -233,6 +284,6 @@ cd producto-service
 - JWT
 - OpenFeign
 - H2 Database
-- Swagger/OpenAPI con Springdoc en servicios especificos
+- Swagger/OpenAPI con Springdoc en los 10 microservicios de dominio
 - Docker Compose para demo minima
 - JUnit 5 y Mockito en servicios con pruebas unitarias
