@@ -59,6 +59,8 @@ Usar los valores con `<...>` solo como placeholders. `discovery-server` ya tiene
 
 En Render, configurar cada servicio desde su subdirectorio correspondiente.
 
+Si se usa el `Dockerfile` de cada servicio, configurar el Web Service con entorno Docker y usar el subdirectorio del servicio como root directory. En ese caso Render ejecuta el build definido en el Dockerfile y no requiere configurar comandos Maven manuales.
+
 ```bash
 ./mvnw clean package -DskipTests
 ```
@@ -94,7 +96,7 @@ java -jar target/pedido-service-0.0.1-SNAPSHOT.jar
 | `log-service` | 8089 | Usa `PORT` |
 | `auth-service` | 8090 | Usa `PORT` |
 
-Los servicios ya tienen `application-prod.properties` con `server.port=${PORT:puerto-local-del-servicio}` en los microservicios. Revisar `api-gateway` antes de Render si se necesita soporte explicito de `PORT`.
+Los servicios ya tienen `application-prod.properties` con `server.port=${PORT:puerto-local-del-servicio}` en los microservicios. La demo H2 principal (`pedido-service`, `cliente-service`, `producto-service` y `estado-service`) y `api-gateway` tambien respetan `PORT`, por lo que pueden arrancar correctamente en Render usando el puerto asignado por la plataforma.
 
 ## Orden Sugerido De Despliegue
 
@@ -162,7 +164,7 @@ En Render se debe usar `https://discovery-server-gjd0.onrender.com/eureka/` como
 
 ## Base De Datos
 
-Para defensa local se usa H2. Para Render productivo, evaluar una base externa persistente por servicio o mantener H2 solo como demo temporal. Si se usa base persistente, revisar `application-prod.properties`, migraciones Flyway y `ddl-auto=validate`.
+Para defensa local se usa H2. Para Render productivo, evaluar una base externa persistente por servicio o mantener H2 solo como demo temporal. Si se usa H2 en Render, configurar `SPRING_PROFILES_ACTIVE=h2` y asumir que la persistencia puede ser efimera. Si se usa base persistente, revisar `application-prod.properties`, migraciones Flyway y `ddl-auto=validate`.
 
 ## Checklist Antes De AVA
 
