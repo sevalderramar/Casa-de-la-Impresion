@@ -1,0 +1,249 @@
+@hostGateway = http://localhost:8080
+@hostAuth = http://localhost:8090
+@hostPedido = http://localhost:8081
+@hostCliente = http://localhost:8082
+@hostProducto = http://localhost:8083
+@hostDespacho = http://localhost:8084
+@hostFabricacion = http://localhost:8085
+@hostEstado = http://localhost:8086
+@hostMetrica = http://localhost:8087
+@hostTransportista = http://localhost:8088
+@hostLog = http://localhost:8089
+@token = reemplazar-token-jwt-si-aplica
+
+### Gateway health
+GET {{hostGateway}}/actuator/health
+
+### Auth login directo
+POST {{hostAuth}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@empresa.com",
+  "password": "pass123"
+}
+
+### Auth ping directo
+GET {{hostAuth}}/api/auth/ping
+
+### Clientes por Gateway - listar
+GET {{hostGateway}}/api/clientes
+Authorization: Bearer {{token}}
+
+### Clientes directo - crear
+POST {{hostCliente}}/api/clientes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Maria Perez",
+  "rut": "12.345.678-9",
+  "email": "maria.perez@empresa.cl",
+  "telefono": "+56 9 8765 4321",
+  "direccion": "Av. Siempre Viva 123",
+  "comuna": "Santiago",
+  "region": "Metropolitana"
+}
+
+### Clientes caso invalido - body incompleto
+POST {{hostCliente}}/api/clientes
+Content-Type: application/json
+
+{
+  "nombre": ""
+}
+
+### Productos por Gateway - listar
+GET {{hostGateway}}/api/productos
+Authorization: Bearer {{token}}
+
+### Productos directo - crear
+POST {{hostProducto}}/api/productos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Tarjetas de presentacion",
+  "descripcion": "Tarjetas full color",
+  "categoria": "Imprenta",
+  "precio": 19990,
+  "stock": 100
+}
+
+### Productos recurso inexistente
+GET {{hostProducto}}/api/productos/999999
+
+### Pedidos por Gateway - listar
+GET {{hostGateway}}/api/pedidos
+Authorization: Bearer {{token}}
+
+### Pedidos directo - crear
+POST {{hostPedido}}/api/pedidos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "clienteId": 1,
+  "estado": "COLA",
+  "tipoDespacho": "RM",
+  "items": [
+    {
+      "productoId": 1,
+      "cantidad": 2
+    }
+  ]
+}
+
+### Pedidos directo - consultar por numero
+GET {{hostPedido}}/api/pedidos/1001
+Authorization: Bearer {{token}}
+
+### Pedidos por Gateway - comunicacion entre servicios
+GET {{hostGateway}}/api/pedidos/cliente/1
+Authorization: Bearer {{token}}
+
+### Pedidos caso invalido - cliente inexistente
+POST {{hostPedido}}/api/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": 999999,
+  "estado": "COLA",
+  "tipoDespacho": "RM",
+  "items": [
+    {
+      "productoId": 1,
+      "cantidad": 1
+    }
+  ]
+}
+
+### Estados directo - registrar cambio
+POST {{hostEstado}}/api/estados
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "numeroPedido": 1001,
+  "estadoAnterior": "COLA",
+  "estadoNuevo": "PRODUCCION",
+  "observacion": "Pedido enviado a fabricacion"
+}
+
+### Estados por Gateway - historial
+GET {{hostGateway}}/api/estados/pedido/1001
+Authorization: Bearer {{token}}
+
+### Estados directo - ultimo estado
+GET {{hostEstado}}/api/estados/pedido/1001/ultimo
+Authorization: Bearer {{token}}
+
+### Despacho directo - crear
+POST {{hostDespacho}}/api/despachos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "numeroPedido": 1001,
+  "tipoDespacho": "RM",
+  "transportista": "Transporte Central",
+  "trackingCode": "TRK-1001"
+}
+
+### Despacho por Gateway - listar
+GET {{hostGateway}}/api/despachos
+Authorization: Bearer {{token}}
+
+### Despacho recurso inexistente
+GET {{hostDespacho}}/api/despachos/999999
+
+### Fabricacion directo - ping
+GET {{hostFabricacion}}/api/fabricacion/ping
+
+### Fabricacion directo - crear orden
+POST {{hostFabricacion}}/api/fabricacion
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "numeroPedido": 1001,
+  "usuarioResponsable": "operador-01",
+  "descripcionEstado": "Inicio de fabricacion de tarjetas"
+}
+
+### Fabricacion por Gateway - consultar orden
+GET {{hostGateway}}/api/fabricacion/1
+Authorization: Bearer {{token}}
+
+### Fabricacion directo - cambiar estado
+PATCH {{hostFabricacion}}/api/fabricacion/1/estado
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nuevoEstado": "EN_PROCESO",
+  "motivo": "Avance registrado desde prueba REST",
+  "usuarioId": "operador-01"
+}
+
+### Metricas directo - cliente
+GET {{hostMetrica}}/api/metricas/clientes/1
+Authorization: Bearer {{token}}
+
+### Metricas por Gateway - ranking
+GET {{hostGateway}}/api/metricas/clientes/ranking?limite=5
+Authorization: Bearer {{token}}
+
+### Metricas directo - productos top
+GET {{hostMetrica}}/api/metricas/productos/top?desde=2026-05-01&hasta=2026-05-31&limite=10
+Authorization: Bearer {{token}}
+
+### Metricas directo - ventas
+GET {{hostMetrica}}/api/metricas/ventas?desde=2026-05-01&hasta=2026-05-31
+Authorization: Bearer {{token}}
+
+### Transportistas directo - crear
+POST {{hostTransportista}}/api/transportistas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Blue Express",
+  "codigoInterno": "TR-001",
+  "contacto": "contacto@blue.cl",
+  "regionesCobertura": "RM,V"
+}
+
+### Transportistas por Gateway - listar
+GET {{hostGateway}}/api/transportistas
+Authorization: Bearer {{token}}
+
+### Transportistas directo - ping
+GET {{hostTransportista}}/api/transportistas/ping
+
+### Logs directo - registrar
+POST {{hostLog}}/api/logs
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "servicio": "pedido-service",
+  "operacion": "CREAR_PEDIDO",
+  "usuarioId": "1",
+  "resultado": "OK",
+  "detalle": "Pedido creado desde prueba REST"
+}
+
+### Logs por Gateway - consultar
+GET {{hostGateway}}/api/logs?servicio=pedido-service
+Authorization: Bearer {{token}}
+
+### Logs caso invalido - campos obligatorios vacios
+POST {{hostLog}}/api/logs
+Content-Type: application/json
+
+{
+  "servicio": "",
+  "operacion": "",
+  "resultado": ""
+}
