@@ -12,45 +12,52 @@ spring:
             - AddResponseHeader=X-Gateway, api-gateway
           routes:
             - id: auth-service
-              uri: http://localhost:8090
+              uri: lb://auth-service
               predicates:
                 - Path=/api/auth/**
             - id: pedido-service
-              uri: ${PEDIDO_SERVICE_URL:http://localhost:8081}
+              uri: lb://pedido-service
               predicates:
                 - Path=/api/pedidos/**
             - id: cliente-service
-              uri: ${CLIENTE_SERVICE_URL:http://localhost:8082}
+              uri: lb://cliente-service
               predicates:
                 - Path=/api/clientes/**
             - id: producto-service
-              uri: ${PRODUCTO_SERVICE_URL:http://localhost:8083}
+              uri: lb://producto-service
               predicates:
                 - Path=/api/productos/**
             - id: despacho-service
-              uri: http://localhost:8084
+              uri: lb://despacho-service
               predicates:
                 - Path=/api/despachos/**
             - id: fabricacion-service
-              uri: http://localhost:8085
+              uri: lb://fabricacion-service
               predicates:
                 - Path=/api/fabricacion/**
             - id: estado-service
-              uri: ${ESTADO_SERVICE_URL:http://localhost:8086}
+              uri: lb://estado-service
               predicates:
                 - Path=/api/estados/**
             - id: metrica-service
-              uri: http://localhost:8087
+              uri: lb://metrica-service
               predicates:
                 - Path=/api/metricas/**
             - id: transportista-service
-              uri: http://localhost:8088
+              uri: lb://transportista-service
               predicates:
                 - Path=/api/transportistas/**
             - id: log-service
-              uri: http://localhost:8089
+              uri: lb://log-service
               predicates:
                 - Path=/api/logs/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+    register-with-eureka: ${EUREKA_CLIENT_REGISTER_WITH_EUREKA:true}
+    fetch-registry: ${EUREKA_CLIENT_FETCH_REGISTRY:true}
 
 management:
   endpoints:
