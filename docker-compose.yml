@@ -1,10 +1,20 @@
 services:
+  discovery-server:
+    build:
+      context: ./discovery-server
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+
   api-gateway:
     build:
       context: ./api-gateway
     container_name: api-gateway
     environment:
       SPRING_PROFILES_ACTIVE: h2
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
       PEDIDO_SERVICE_URL: http://pedido-service:8081
       CLIENTE_SERVICE_URL: http://cliente-service:8082
       PRODUCTO_SERVICE_URL: http://producto-service:8083
@@ -12,6 +22,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
+      - discovery-server
       - pedido-service
       - cliente-service
       - producto-service
@@ -25,6 +36,9 @@ services:
       SPRING_PROFILES_ACTIVE: h2
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
       CLIENTE_SERVICE_URL: http://cliente-service:8082
       PRODUCTO_SERVICE_URL: http://producto-service:8083
       ESTADO_SERVICE_URL: http://estado-service:8086
@@ -33,6 +47,7 @@ services:
     volumes:
       - pedido-data:/app/data
     depends_on:
+      - discovery-server
       - cliente-service
       - producto-service
       - estado-service
@@ -45,10 +60,15 @@ services:
       SPRING_PROFILES_ACTIVE: h2
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
     ports:
       - "8082:8082"
     volumes:
       - cliente-data:/app/data
+    depends_on:
+      - discovery-server
 
   producto-service:
     build:
@@ -58,10 +78,15 @@ services:
       SPRING_PROFILES_ACTIVE: h2
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
     ports:
       - "8083:8083"
     volumes:
       - producto-data:/app/data
+    depends_on:
+      - discovery-server
 
   estado-service:
     build:
@@ -71,10 +96,15 @@ services:
       SPRING_PROFILES_ACTIVE: h2
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
     expose:
       - "8086"
     volumes:
       - estado-data:/app/data
+    depends_on:
+      - discovery-server
 
 volumes:
   pedido-data:
