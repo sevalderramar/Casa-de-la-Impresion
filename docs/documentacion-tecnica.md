@@ -205,7 +205,7 @@ El Gateway puede tardar algunos segundos en resolver rutas `lb://` mientras refr
 
 ## Render
 
-Render esta pendiente/configurable. No hay URLs publicas reales versionadas ni `render.yaml` existente. La documentacion de despliegue esta en `docs/render-deploy.md` con placeholders, incluyendo `discovery-server` y la variable `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`.
+Render esta parcialmente avanzado: `discovery-server` ya fue desplegado y validado en `https://discovery-server-gjd0.onrender.com`, con endpoint Eureka `https://discovery-server-gjd0.onrender.com/eureka/`. El `api-gateway` y los microservicios de dominio siguen pendientes de URLs reales; la documentacion de despliegue mantiene placeholders para esos servicios en `docs/render-deploy.md`.
 
 # Ejecución desde cero
 

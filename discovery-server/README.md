@@ -19,6 +19,11 @@ Centralizar el registro y descubrimiento de los 10 microservicios de dominio y d
 - Local: `http://localhost:8761/eureka/`
 - Docker/Render: configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` apuntando al servidor Eureka del entorno.
 
+Render validado:
+
+- Consola Eureka: `https://discovery-server-gjd0.onrender.com`
+- Endpoint Eureka: `https://discovery-server-gjd0.onrender.com/eureka/`
+
 En Docker Compose validado, la variable usada por Gateway y servicios demo es:
 
 ```properties
@@ -67,3 +72,14 @@ Durante la validacion Docker, Eureka mostro registrados y en estado `UP`:
 - `PRODUCTO-SERVICE`
 - `PEDIDO-SERVICE`
 - `ESTADO-SERVICE`
+
+## Render
+
+`discovery-server` ya fue desplegado y validado en Render como primer servicio del ecosistema.
+
+| Evidencia | Valor |
+|---|---|
+| Render deploy | Exitoso |
+| URL publica | `https://discovery-server-gjd0.onrender.com` |
+| Eureka apps endpoint | `https://discovery-server-gjd0.onrender.com/eureka/` |
+| Estado | `discovery-server` desplegado; clientes pendientes |

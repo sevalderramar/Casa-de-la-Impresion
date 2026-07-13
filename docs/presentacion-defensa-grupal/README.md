@@ -20,7 +20,7 @@ Se implemento una arquitectura Spring Boot con 10 microservicios de dominio, un 
 
 | Incluido | No incluido o pendiente |
 |---|---|
-| 10 microservicios de dominio | Render con URLs publicas reales confirmadas |
+| 10 microservicios de dominio | Render completo con Gateway y microservicios publicados |
 | API Gateway central | Docker Compose con todos los servicios |
 | Discovery Server Eureka | Base de datos productiva externa |
 | JWT implementado | Endurecimiento final de seguridad productiva |
@@ -88,7 +88,7 @@ Docker Compose corresponde a una demo minima validada del flujo principal con Eu
 
 ## Render
 
-Render esta documentado como configuracion preparada y pendiente de publicacion final. No se deben inventar URLs publicas; si se despliega antes de AVA, se deben reemplazar los placeholders por URLs reales.
+Render esta avanzado parcialmente: `discovery-server` ya fue desplegado y validado en `https://discovery-server-gjd0.onrender.com`, con endpoint Eureka `https://discovery-server-gjd0.onrender.com/eureka/`. El Gateway y los microservicios siguen pendientes de publicacion con URLs reales.
 
 ## Feedback Corregido
 

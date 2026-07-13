@@ -230,6 +230,14 @@ Para Gateway con Eureka, la variable relevante del entorno Docker/Render es:
 EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
 ```
 
+Para Render, `discovery-server` ya fue desplegado y validado como primer servicio. Los clientes Render deben usar:
+
+```properties
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+```
+
+URL publica de Eureka en Render: `https://discovery-server-gjd0.onrender.com`. El `api-gateway` y los microservicios siguen pendientes de URLs reales en Render.
+
 La consola Eureka queda disponible en `http://localhost:8761` y el Gateway en `http://localhost:8080`. El Gateway puede tardar algunos segundos en resolver rutas `lb://` mientras refresca el registry de Eureka; si aparece `503 Service Unavailable` inmediatamente despues del arranque, esperar 20-40 segundos y reintentar.
 
 ## Comandos De Prueba

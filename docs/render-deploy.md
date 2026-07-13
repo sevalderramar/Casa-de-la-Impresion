@@ -2,15 +2,15 @@
 
 ## Estado Actual
 
-La configuracion de Render queda documentada y preparada a nivel de instrucciones. No hay evidencia en el repositorio de URLs publicas reales desplegadas, por lo tanto no se afirma que Render ya este operativo.
+`discovery-server` ya fue desplegado y validado en Render como primer servicio del ecosistema. Los demas servicios siguen documentados con placeholders y no se afirma que `api-gateway` ni los microservicios de dominio ya esten desplegados.
 
-Las URLs son placeholders y deben reemplazarse por las URLs reales generadas por Render antes de registrar la entrega en AVA.
+Las URLs restantes son placeholders y deben reemplazarse por las URLs reales generadas por Render antes de registrar la entrega en AVA.
 
 ## URLs Placeholder
 
 | Servicio | URL placeholder |
 |---|---|
-| `discovery-server` | `https://<discovery-server>.onrender.com` |
+| `discovery-server` | `https://discovery-server-gjd0.onrender.com` |
 | `api-gateway` | `https://<api-gateway>.onrender.com` |
 | `auth-service` | `https://<auth-service>.onrender.com` |
 | `pedido-service` | `https://<pedido-service>.onrender.com` |
@@ -23,7 +23,16 @@ Las URLs son placeholders y deben reemplazarse por las URLs reales generadas por
 | `transportista-service` | `https://<transportista-service>.onrender.com` |
 | `log-service` | `https://<log-service>.onrender.com` |
 
-Usar estos valores solo como placeholders. Reemplazar por las URLs reales asignadas por Render antes de la entrega formal.
+Usar los valores con `<...>` solo como placeholders. `discovery-server` ya tiene URL real validada; reemplazar los demas servicios por las URLs reales asignadas por Render antes de la entrega formal.
+
+## Evidencia Discovery Server Render
+
+| Evidencia | Valor |
+|---|---|
+| Render deploy | Exitoso |
+| URL publica | `https://discovery-server-gjd0.onrender.com` |
+| Eureka apps endpoint | `https://discovery-server-gjd0.onrender.com/eureka/` |
+| Estado | `discovery-server` desplegado; clientes pendientes |
 
 ## Variables De Entorno Globales
 
@@ -39,7 +48,7 @@ Usar estos valores solo como placeholders. Reemplazar por las URLs reales asigna
 | Servicio | Variables adicionales |
 |---|---|
 | `discovery-server` | Variables globales si aplica |
-| `api-gateway` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://<discovery-server>.onrender.com/eureka/` |
+| `api-gateway` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/` |
 | `pedido-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL`, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
 | `metrica-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, URLs de servicios consultados para metricas si aplica, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
 | `fabricacion-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `PEDIDO_SERVICE_URL` si usa integracion remota, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
@@ -118,15 +127,15 @@ Los servicios ya tienen `application-prod.properties` con `server.port=${PORT:pu
 
 ## Discovery En Render
 
-El proyecto utiliza `discovery-server` con Eureka Server. En Render se debe crear un Web Service para `discovery-server` y usar su URL publica como `defaultZone` de todos los clientes Eureka.
+El proyecto utiliza `discovery-server` con Eureka Server. El Web Service de `discovery-server` ya esta publicado en Render y su URL publica debe usarse como `defaultZone` de todos los clientes Eureka.
 
 Ejemplo:
 
 ```properties
-EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://<discovery-server>.onrender.com/eureka/
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
 ```
 
-El `api-gateway` se registra como cliente Eureka y usa rutas `lb://`, por lo que no se deben documentar URLs reales de servicios mientras no existan despliegues verificados.
+El `api-gateway` se registra como cliente Eureka y usa rutas `lb://`, pero aun no se afirma que este desplegado en Render. No se deben documentar URLs reales de Gateway o microservicios mientras no existan despliegues verificados.
 
 ## Referencia Docker Validada
 
@@ -149,7 +158,7 @@ JWT_EXPIRATION_MS=86400000
 EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
 ```
 
-En Render se debe reemplazar el `defaultZone` por `https://<discovery-server>.onrender.com/eureka/` cuando exista URL real.
+En Render se debe usar `https://discovery-server-gjd0.onrender.com/eureka/` como `defaultZone` para Gateway y microservicios cuando se desplieguen.
 
 ## Base De Datos
 
@@ -159,9 +168,10 @@ Para defensa local se usa H2. Para Render productivo, evaluar una base externa p
 
 | Item | Estado |
 |---|---|
-| URLs reales Render reemplazadas | Pendiente |
+| URL real `discovery-server` reemplazada | Listo |
+| URLs reales de Gateway y microservicios reemplazadas | Pendiente |
 | Variables `JWT_SECRET` configuradas en Render | Pendiente |
-| `discovery-server` desplegado primero | Pendiente |
+| `discovery-server` desplegado primero | Listo |
 | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` configurado en servicios y Gateway | Pendiente |
 | Gateway registrado en Eureka y rutas `lb://` verificadas | Pendiente |
 | Swagger probado en servicios desplegados | Pendiente |
