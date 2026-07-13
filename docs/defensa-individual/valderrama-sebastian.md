@@ -105,7 +105,11 @@ La trazabilidad de pedidos se sostiene con cambios de estado e historial. Cada c
 
 ## Comunicacion Entre Servicios Que Domina
 
-El sistema usa Gateway para entrada externa y OpenFeign/REST para llamadas internas. El discovery no usa Eureka real; se resuelve por rutas estaticas y variables de entorno como `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL` y `PEDIDO_SERVICE_URL`.
+El sistema usa Gateway para entrada externa y OpenFeign/REST para llamadas internas. Se implemento `discovery-server` con Eureka Server en `http://localhost:8761`; los 10 microservicios y el `api-gateway` se registran como clientes Eureka. El Gateway enruta mediante URIs `lb://` y mantiene los prefijos `/api/**`.
+
+## Aporte Personal En Discovery
+
+Como responsable integral del proyecto, Sebastian Valderrama implemento el modulo `discovery-server`, registro los microservicios como clientes Eureka, actualizo el Gateway para enrutar con `lb://` y valido el flujo usando la consola Eureka y endpoints expuestos por Gateway.
 
 ## Dificultad Tecnica Y Solucion
 
@@ -113,7 +117,7 @@ El sistema usa Gateway para entrada externa y OpenFeign/REST para llamadas inter
 |---|---|
 | Aumentar cobertura sin cambiar logica | Crear pruebas unitarias y de controller enfocadas en comportamiento real |
 | Documentar Swagger sin alterar endpoints | Agregar anotaciones y `OpenApiConfig` sin cambiar rutas ni servicios |
-| Explicar ausencia de Eureka | Documentar discovery estatico por Gateway/env como decision tecnica actual |
+| Incorporar discovery real | Agregar Eureka Server, registrar servicios y actualizar Gateway a `lb://` |
 | Cerrar documentacion final | Crear documentos formales con estado real y pendientes claros |
 
 ## Checklist Personal
@@ -122,9 +126,10 @@ El sistema usa Gateway para entrada externa y OpenFeign/REST para llamadas inter
 |---|---|
 | Conozco el flujo de pedido completo | Si |
 | Puedo explicar Gateway y rutas | Si |
+| Puedo mostrar consola Eureka y servicios registrados | Si |
 | Puedo mostrar Swagger de servicios | Si |
 | Puedo mostrar JaCoCo y tests | Si |
 | Puedo explicar JWT y modo demo/local | Si |
 | Puedo justificar Docker Compose minimo | Si |
-| Puedo justificar ausencia de Eureka real | Si |
+| Puedo explicar Eureka real y Gateway `lb://` | Si |
 | Puedo explicar pendientes de Render | Si |

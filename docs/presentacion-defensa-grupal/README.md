@@ -14,21 +14,22 @@ Casa de la Impresion requiere controlar pedidos, clientes, productos, estados, f
 
 ## Solucion
 
-Se implemento una arquitectura Spring Boot con 10 microservicios de dominio y un API Gateway central. El sistema expone APIs REST documentadas con Swagger/OpenAPI, pruebas automatizadas, JaCoCo y una demo Docker minima del flujo principal.
+Se implemento una arquitectura Spring Boot con 10 microservicios de dominio, un API Gateway central y un Discovery Server Eureka real. El sistema expone APIs REST documentadas con Swagger/OpenAPI, pruebas automatizadas, JaCoCo y una demo Docker minima del flujo principal.
 
 ## Alcance
 
 | Incluido | No incluido o pendiente |
 |---|---|
-| 10 microservicios de dominio | Eureka real |
-| API Gateway central | Render con URLs publicas reales confirmadas |
-| JWT implementado | Docker Compose con todos los servicios |
-| Swagger en 10 microservicios | Base de datos productiva externa |
-| 452 tests pasando | Endurecimiento final de seguridad productiva |
+| 10 microservicios de dominio | Render con URLs publicas reales confirmadas |
+| API Gateway central | Docker Compose con todos los servicios |
+| Discovery Server Eureka | Base de datos productiva externa |
+| JWT implementado | Endurecimiento final de seguridad productiva |
+| Swagger en 10 microservicios |  |
+| 452 tests pasando |  |
 
 ## Arquitectura
 
-El Gateway recibe peticiones por `http://localhost:8080` y enruta a servicios internos. El servicio central del dominio es `pedido-service`, que se apoya en clientes, productos y estados. Otros servicios complementan el ciclo: fabricacion, despacho, metricas, transportistas, logs y autenticacion.
+El `discovery-server` publica Eureka en `http://localhost:8761`. Los microservicios y el Gateway se registran como clientes Eureka. El Gateway recibe peticiones por `http://localhost:8080` y enruta con `lb://` a servicios registrados, manteniendo los prefijos `/api/**`. El servicio central del dominio es `pedido-service`, que se apoya en clientes, productos y estados. Otros servicios complementan el ciclo: fabricacion, despacho, metricas, transportistas, logs y autenticacion.
 
 ## Microservicios
 
@@ -45,6 +46,7 @@ El Gateway recibe peticiones por `http://localhost:8080` y enruta a servicios in
 | `transportista-service` | Transportistas disponibles |
 | `log-service` | Auditoria de eventos |
 | `api-gateway` | Rutas centralizadas |
+| `discovery-server` | Eureka Server para registro y descubrimiento |
 
 ## Flujo Funcional
 
@@ -59,7 +61,7 @@ El Gateway recibe peticiones por `http://localhost:8080` y enruta a servicios in
 ## Flujo Tecnico
 
 1. Cliente HTTP llama al Gateway.
-2. Gateway enruta por path `/api/**`.
+2. Gateway consulta Eureka y enruta por path `/api/**` usando `lb://`.
 3. Microservicio procesa request y valida datos.
 4. Si requiere datos remotos, usa REST/OpenFeign.
 5. Responde JSON y, cuando corresponde, registra eventos o metricas.
@@ -78,11 +80,11 @@ Los 10 microservicios exponen Swagger UI y OpenAPI JSON. Ver tabla completa de S
 
 ## Gateway
 
-El Gateway contiene rutas para los 10 dominios principales: auth, pedidos, clientes, productos, despachos, fabricacion, estados, metricas, transportistas y logs.
+El Gateway contiene rutas para los 10 dominios principales: auth, pedidos, clientes, productos, despachos, fabricacion, estados, metricas, transportistas y logs. Las rutas usan `lb://auth-service`, `lb://pedido-service`, `lb://cliente-service`, `lb://producto-service`, `lb://despacho-service`, `lb://fabricacion-service`, `lb://estado-service`, `lb://metrica-service`, `lb://transportista-service` y `lb://log-service`.
 
 ## Docker
 
-Docker Compose esta definido como demo minima del flujo principal con Gateway, pedido, cliente, producto y estado. No representa el despliegue completo de los 10 microservicios.
+Docker Compose esta definido como demo minima del flujo principal con Gateway, pedido, cliente, producto y estado. Para operar con Eureka real, se debe levantar `discovery-server` primero y configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`. No representa el despliegue completo de los 10 microservicios.
 
 ## Render
 
@@ -96,6 +98,7 @@ Render esta documentado como configuracion preparada y pendiente de publicacion 
 | Swagger incompleto | Swagger en los 10 microservicios |
 | Falta evidencia de cobertura | JaCoCo en 10 microservicios |
 | Gateway limitado | Rutas centralizadas documentadas |
+| Discovery formal | Eureka Server agregado y Gateway actualizado a `lb://` |
 | Documentacion final faltante | Carpeta `docs/` creada |
 | Falta coleccion REST | Archivo `.http` creado |
 
@@ -107,7 +110,7 @@ Render esta documentado como configuracion preparada y pendiente de publicacion 
 | Errores remotos Feign | Agregar manejo y pruebas de fallos |
 | Cobertura en servicios con seguridad | Probar filtros, utilidades JWT y controllers |
 | Swagger uniforme | Crear `OpenApiConfig` y anotaciones por servicio |
-| Render y discovery | Documentar rutas estaticas/env y placeholders |
+| Render y discovery | Agregar Eureka Server y documentar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` con placeholders |
 
 ## Distribucion De Trabajo Individual
 
@@ -117,7 +120,7 @@ Todas las areas fueron abordadas por el mismo estudiante.
 |---|---|
 | Arquitectura | Definicion de microservicios, responsabilidades y flujo principal |
 | Backend | Implementacion y cierre de servicios de dominio |
-| Gateway | Configuracion de rutas centralizadas |
+| Gateway | Configuracion de rutas centralizadas con `lb://` y Eureka |
 | Pruebas | Suite automatizada, JaCoCo y evidencias de cobertura |
 | Swagger | Documentacion OpenAPI de los 10 microservicios |
 | Documentacion | README, documentos formales, pruebas REST y preparacion de defensa |

@@ -1,10 +1,10 @@
 # Discovery Server
 
-Servidor Eureka independiente para descubrimiento de servicios del ecosistema Casa de la Impresion.
+Servidor Eureka independiente para registro y descubrimiento de servicios del ecosistema Casa de la Impresion.
 
 ## Proposito
 
-Centralizar el registro y descubrimiento de microservicios usando Netflix Eureka Server.
+Centralizar el registro y descubrimiento de los 10 microservicios de dominio y del `api-gateway` usando Netflix Eureka Server.
 
 ## Puerto
 
@@ -13,6 +13,11 @@ Centralizar el registro y descubrimiento de microservicios usando Netflix Eureka
 ## Consola Eureka
 
 - `http://localhost:8761`
+
+## Endpoint Eureka
+
+- Local: `http://localhost:8761/eureka/`
+- Docker/Render: configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` apuntando al servidor Eureka del entorno.
 
 ## Ejecucion local
 
@@ -30,4 +35,17 @@ Linux/macOS:
 
 ## Registro de servicios
 
-Los microservicios se registraran en Eureka en pasos posteriores. Este modulo solo agrega el servidor de discovery.
+Los 10 microservicios de dominio se registran como clientes Eureka:
+
+- `auth-service`
+- `pedido-service`
+- `cliente-service`
+- `producto-service`
+- `despacho-service`
+- `fabricacion-service`
+- `estado-service`
+- `metrica-service`
+- `transportista-service`
+- `log-service`
+
+El `api-gateway` tambien se registra como cliente Eureka y enruta hacia esos servicios mediante URIs `lb://`.

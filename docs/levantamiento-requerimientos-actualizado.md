@@ -15,7 +15,7 @@ Este documento registra como evolucionaron los requerimientos durante el semestr
 | LR-09 | Registrar logs | Se agrego auditoria operacional | Mejora trazabilidad entre servicios | Implementado | `log-service` |
 | LR-10 | Autenticacion | Se implemento JWT y usuarios | Aporta seguridad base y autenticacion centralizada | Implementado | `auth-service`, filtros JWT, tests |
 | LR-11 | API Gateway | Se agrego Gateway central | Permite entrada unica y rutas unificadas | Implementado | `api-gateway/application.yml` |
-| LR-12 | Service discovery | Se evaluo Eureka, pero se dejo discovery estatico | Reduce complejidad para demo local y Render inicial | Parcial documentado | Gateway con URLs estaticas/env; sin Eureka real |
+| LR-12 | Service discovery | Se agrego `discovery-server` con Eureka en etapa final | Cumplir el entregable tecnico de discovery real y permitir enrutamiento Gateway por servicios registrados | Agregado/Implementado | `discovery-server`, clientes Eureka en microservicios y Gateway con rutas `lb://` |
 | LR-13 | Documentacion Swagger | Se amplio a los 10 microservicios | Facilita evaluacion de endpoints y contrato API | Implementado | `OpenApiConfig`, `@Operation`, `/v3/api-docs` |
 | LR-14 | Pruebas unitarias | Se amplio desde cobertura parcial a suite completa | Se corrigio feedback de baja cobertura | Implementado | 452 tests pasando |
 | LR-15 | Cobertura JaCoCo | Se agrego JaCoCo en los 10 microservicios | Evidencia objetiva para entrega final | Implementado | Reportes `target/site/jacoco` |

@@ -101,7 +101,7 @@ Los estados finales documentados por `pedido-service` son los siguientes:
 |---|---|
 | Demo local usa H2 | Facilita evaluacion sin infraestructura externa |
 | Docker Compose es demo minima | Cubre Gateway, pedido, cliente, producto y estado |
-| Discovery actual no usa Eureka | Se usa Gateway con rutas estaticas y variables de entorno |
+| Discovery usa Eureka | Los servicios se registran en `discovery-server` y el Gateway mantiene prefijos `/api/**` |
 | Render no tiene URLs publicas versionadas | Se documenta configuracion con placeholders |
 | Endpoints demo/local estan permitidos para facilitar pruebas | JWT esta implementado, pero la demo prioriza ejecucion evaluable |
 

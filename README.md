@@ -1,13 +1,14 @@
 # Casa de la Impresion - Microservicios
 
-Sistema backend para la gestion de pedidos de Casa de la Impresion. El proyecto esta organizado como una arquitectura de microservicios Spring Boot con API Gateway, persistencia H2 para desarrollo local, seguridad JWT, comunicacion REST/OpenFeign, documentacion Swagger/OpenAPI en los 10 microservicios de dominio y una demo Docker minima para los servicios principales del flujo de pedidos.
+Sistema backend para la gestion de pedidos de Casa de la Impresion. El proyecto esta organizado como una arquitectura de microservicios Spring Boot con API Gateway, Discovery Server Eureka real, persistencia H2 para desarrollo local, seguridad JWT, comunicacion REST/OpenFeign, documentacion Swagger/OpenAPI en los 10 microservicios de dominio y una demo Docker minima para los servicios principales del flujo de pedidos.
 
 ## Arquitectura
 
-El sistema se compone de 10 microservicios de dominio mas un `api-gateway`. Cada microservicio mantiene su propia responsabilidad y, cuando corresponde, se comunica con otros servicios mediante HTTP/OpenFeign.
+El sistema se compone de 10 microservicios de dominio mas un `api-gateway` y un `discovery-server` Eureka. Cada microservicio mantiene su propia responsabilidad y se registra como cliente Eureka; el Gateway tambien se registra y enruta mediante URIs `lb://` hacia los servicios registrados.
 
 | Servicio | Puerto | Responsabilidad |
 |---|---:|---|
+| discovery-server | 8761 | Servidor Eureka para registro y descubrimiento de servicios |
 | api-gateway | 8080 | Entrada central y enrutamiento hacia microservicios |
 | pedido-service | 8081 | Gestion de pedidos e integracion con cliente, producto y estado |
 | cliente-service | 8082 | Gestion de clientes |
@@ -31,28 +32,34 @@ Auditoria final del proyecto completo:
 | Microservicios sobre 80% de cobertura de lineas | 10 |
 | Microservicios con Swagger/OpenAPI | 10 |
 | API Gateway compilando | Si |
+| Discovery Server Eureka | Si |
 
 Nota sobre `api-gateway`: el gateway compila correctamente y enruta hacia los microservicios, pero no se cuenta dentro de los 10 microservicios de dominio para JaCoCo, cobertura ni Swagger. Su responsabilidad es de infraestructura/enrutamiento y no expone controladores de negocio propios.
 
 ## API Gateway
 
-El Gateway corre en `http://localhost:8080` y enruta hacia los servicios internos. Las rutas principales configuradas para la demo y el uso local son:
+El Gateway corre en `http://localhost:8080`, se registra como cliente Eureka y enruta hacia los servicios internos usando URIs `lb://`. Las rutas mantienen los prefijos `/api/**` y se resuelven contra los servicios registrados en Eureka.
 
-| Ruta Gateway | Servicio destino local |
+| Ruta Gateway | Servicio Eureka | URI Gateway |
 |---|---|
-| `/api/clientes/**` | `cliente-service` en `8082` |
-| `/api/productos/**` | `producto-service` en `8083` |
-| `/api/pedidos/**` | `pedido-service` en `8081` |
-| `/api/estados/**` | `estado-service` en `8086` |
+| `/api/auth/**` | `auth-service` | `lb://auth-service` |
+| `/api/pedidos/**` | `pedido-service` | `lb://pedido-service` |
+| `/api/clientes/**` | `cliente-service` | `lb://cliente-service` |
+| `/api/productos/**` | `producto-service` | `lb://producto-service` |
+| `/api/despachos/**` | `despacho-service` | `lb://despacho-service` |
+| `/api/fabricacion/**` | `fabricacion-service` | `lb://fabricacion-service` |
+| `/api/estados/**` | `estado-service` | `lb://estado-service` |
+| `/api/metricas/**` | `metrica-service` | `lb://metrica-service` |
+| `/api/transportistas/**` | `transportista-service` | `lb://transportista-service` |
+| `/api/logs/**` | `log-service` | `lb://log-service` |
 
-Las URLs de destino del Gateway usan variables de entorno con fallback local:
+Eureka local usa la siguiente URL por defecto:
 
 ```properties
-CLIENTE_SERVICE_URL=http://localhost:8082
-PRODUCTO_SERVICE_URL=http://localhost:8083
-PEDIDO_SERVICE_URL=http://localhost:8081
-ESTADO_SERVICE_URL=http://localhost:8086
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
 ```
+
+La consola Eureka queda disponible en `http://localhost:8761`. Al iniciar o reiniciar servicios, el Gateway puede responder `503 Service Unavailable` durante algunos segundos mientras refresca el registry de Eureka.
 
 ## Seguridad
 
@@ -81,7 +88,26 @@ cd cliente-service
 .\mvnw spring-boot:run
 ```
 
-Para el flujo principal por Gateway, levantar en terminales separadas:
+Para el flujo principal por Gateway, levantar en terminales separadas en este orden:
+
+1. `discovery-server`
+2. microservicios de dominio
+3. `api-gateway`
+
+Primero levantar Eureka:
+
+```powershell
+cd discovery-server
+.\mvnw spring-boot:run
+```
+
+Consola Eureka local:
+
+```text
+http://localhost:8761
+```
+
+Luego levantar los microservicios. Por defecto se registran en `http://localhost:8761/eureka/`:
 
 ```powershell
 cd estado-service
@@ -108,17 +134,14 @@ $env:ESTADO_SERVICE_URL="http://localhost:8086"
 
 ```powershell
 cd api-gateway
-$env:CLIENTE_SERVICE_URL="http://localhost:8082"
-$env:PRODUCTO_SERVICE_URL="http://localhost:8083"
-$env:PEDIDO_SERVICE_URL="http://localhost:8081"
-$env:ESTADO_SERVICE_URL="http://localhost:8086"
 .\mvnw spring-boot:run
 ```
 
 ## Demo Docker
 
-La demo Docker actual incluye solo los servicios necesarios para probar el flujo principal por Gateway:
+Para operar la demo Docker del flujo principal por Gateway con Eureka real, `discovery-server` debe levantarse antes del Gateway y los servicios deben recibir `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` apuntando al servidor Eureka del entorno.
 
+- `discovery-server` requerido para enrutamiento `lb://`
 - `api-gateway`
 - `cliente-service`
 - `producto-service`
@@ -159,7 +182,7 @@ docker compose ps
 docker compose down
 ```
 
-El `docker-compose.yml` configura `SPRING_PROFILES_ACTIVE=h2` para los servicios de la demo. `pedido-service` se conecta por nombres internos de Docker:
+El `docker-compose.yml` configura `SPRING_PROFILES_ACTIVE=h2` para los servicios de la demo. `pedido-service` conserva variables de URL para llamadas Feign internas donde aplica:
 
 ```properties
 CLIENTE_SERVICE_URL=http://cliente-service:8082
@@ -167,7 +190,11 @@ PRODUCTO_SERVICE_URL=http://producto-service:8083
 ESTADO_SERVICE_URL=http://estado-service:8086
 ```
 
-El Gateway tambien recibe esas URLs internas para enrutar dentro de la red Docker.
+Para Gateway con Eureka, la variable relevante del entorno Docker/Render es:
+
+```properties
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+```
 
 ## Comandos De Prueba
 
@@ -283,6 +310,7 @@ Comandos para generar evidencias de build, tests y cobertura:
 - Spring Security
 - JWT
 - OpenFeign
+- Spring Cloud Netflix Eureka
 - H2 Database
 - Swagger/OpenAPI con Springdoc en los 10 microservicios de dominio
 - Docker Compose para demo minima

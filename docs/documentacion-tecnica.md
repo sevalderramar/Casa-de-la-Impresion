@@ -2,7 +2,7 @@
 
 ## Arquitectura General
 
-El sistema usa una arquitectura de microservicios Spring Boot. El `api-gateway` centraliza rutas HTTP y los 10 microservicios de dominio exponen APIs REST documentadas con Swagger/OpenAPI. La comunicacion entre servicios se realiza mediante REST y OpenFeign donde corresponde.
+El sistema usa una arquitectura de microservicios Spring Boot con `discovery-server` Eureka real. El `api-gateway` centraliza rutas HTTP, se registra como cliente Eureka y enruta con URIs `lb://` hacia los servicios registrados. Los 10 microservicios de dominio tambien se registran como clientes Eureka y exponen APIs REST documentadas con Swagger/OpenAPI. La comunicacion entre servicios se realiza mediante REST, OpenFeign y discovery Eureka donde corresponde.
 
 El servicio principal del dominio es `pedido-service`, porque concentra la operacion central de crear, consultar y evolucionar pedidos. Los servicios de apoyo entregan clientes, productos, estados, fabricacion, despacho, metricas, transportistas, logs y autenticacion.
 
@@ -14,6 +14,7 @@ Casa-de-la-impresion/
   .env.example
   docker-compose.yml
   run-all.ps1
+  discovery-server/
   api-gateway/
   auth-service/
   cliente-service/
@@ -32,6 +33,7 @@ Casa-de-la-impresion/
 
 | Servicio | Puerto | Responsabilidad |
 |---|---:|---|
+| `discovery-server` | 8761 | Servidor Eureka para registro y descubrimiento de servicios |
 | `api-gateway` | 8080 | Entrada central y rutas hacia microservicios |
 | `pedido-service` | 8081 | Gestion principal de pedidos e integraciones |
 | `cliente-service` | 8082 | Gestion de clientes |
@@ -46,24 +48,28 @@ Casa-de-la-impresion/
 
 ## Gateway
 
-El Gateway usa Spring Cloud Gateway WebFlux y define rutas centralizadas en `api-gateway/src/main/resources/application.yml`.
+El Gateway usa Spring Cloud Gateway WebFlux, se registra como cliente Eureka y define rutas centralizadas en `api-gateway/src/main/resources/application.yml`. Las rutas conservan los prefijos `/api/**`, pero el destino se resuelve mediante URIs `lb://` contra el registry de Eureka.
 
-| Ruta | Servicio |
-|---|---|
-| `/api/auth/**` | `auth-service` |
-| `/api/pedidos/**` | `pedido-service` |
-| `/api/clientes/**` | `cliente-service` |
-| `/api/productos/**` | `producto-service` |
-| `/api/despachos/**` | `despacho-service` |
-| `/api/fabricacion/**` | `fabricacion-service` |
-| `/api/estados/**` | `estado-service` |
-| `/api/metricas/**` | `metrica-service` |
-| `/api/transportistas/**` | `transportista-service` |
-| `/api/logs/**` | `log-service` |
+| Ruta | Servicio Eureka | URI Gateway |
+|---|---|---|
+| `/api/auth/**` | `auth-service` | `lb://auth-service` |
+| `/api/pedidos/**` | `pedido-service` | `lb://pedido-service` |
+| `/api/clientes/**` | `cliente-service` | `lb://cliente-service` |
+| `/api/productos/**` | `producto-service` | `lb://producto-service` |
+| `/api/despachos/**` | `despacho-service` | `lb://despacho-service` |
+| `/api/fabricacion/**` | `fabricacion-service` | `lb://fabricacion-service` |
+| `/api/estados/**` | `estado-service` | `lb://estado-service` |
+| `/api/metricas/**` | `metrica-service` | `lb://metrica-service` |
+| `/api/transportistas/**` | `transportista-service` | `lb://transportista-service` |
+| `/api/logs/**` | `log-service` | `lb://log-service` |
 
 ## Discovery
 
-No existe Eureka Server real en el repositorio. El discovery actual se resuelve mediante configuracion estatica y variables de entorno en Gateway, por ejemplo `PEDIDO_SERVICE_URL`, `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL` y `ESTADO_SERVICE_URL`. Esta decision simplifica la demo local y Docker Compose, pero debe declararse en la defensa si la pauta pregunta por service discovery.
+Existe un modulo `discovery-server` que ejecuta Netflix Eureka Server en el puerto local `8761`. La consola queda disponible en `http://localhost:8761` y el endpoint local de registro es `http://localhost:8761/eureka/`.
+
+Los 10 microservicios de dominio se registran como clientes Eureka. El `api-gateway` tambien se registra como cliente Eureka y usa rutas `lb://` hacia los servicios registrados. En Docker y Render, la variable que debe apuntar al servidor Eureka del entorno es `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`.
+
+Despues de iniciar o reiniciar servicios, el Gateway puede responder `503 Service Unavailable` durante algunos segundos mientras refresca el registry de Eureka.
 
 ## Modelo De Datos Resumido
 
@@ -103,10 +109,11 @@ Para los demas servicios, la justificacion actual es uso de JPA/Hibernate con H2
 |---|---|
 | `JWT_SECRET` | Secreto base para firmar y validar tokens JWT |
 | `JWT_EXPIRATION_MS` | Duracion del token JWT |
-| `PEDIDO_SERVICE_URL` | URL de `pedido-service` para Gateway o clientes Feign |
-| `CLIENTE_SERVICE_URL` | URL de `cliente-service` |
-| `PRODUCTO_SERVICE_URL` | URL de `producto-service` |
-| `ESTADO_SERVICE_URL` | URL de `estado-service` |
+| `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` | URL del servidor Eureka; localmente `http://localhost:8761/eureka/` |
+| `PEDIDO_SERVICE_URL` | URL de `pedido-service` para clientes Feign internos donde aplica |
+| `CLIENTE_SERVICE_URL` | URL de `cliente-service` para clientes Feign internos donde aplica |
+| `PRODUCTO_SERVICE_URL` | URL de `producto-service` para clientes Feign internos donde aplica |
+| `ESTADO_SERVICE_URL` | URL de `estado-service` para clientes Feign internos donde aplica |
 | `PORT` | Puerto asignado por Render cuando aplica |
 
 ## Seguridad JWT
@@ -115,7 +122,7 @@ JWT esta implementado mediante filtros y utilidades de seguridad en los servicio
 
 ## Comunicacion Feign
 
-`pedido-service`, `fabricacion-service`, `despacho-service` y `metrica-service` tienen integraciones o contratos Feign para comunicarse con servicios remotos. Las pruebas cubren casos de errores remotos y tolerancia frente a respuestas Feign no exitosas.
+`pedido-service`, `fabricacion-service`, `despacho-service` y `metrica-service` tienen integraciones o contratos Feign para comunicarse con servicios remotos. Las pruebas cubren casos de errores remotos y tolerancia frente a respuestas Feign no exitosas. El Gateway no depende de URLs HTTP fijas para enrutar: usa Eureka y rutas `lb://`.
 
 ## Manejo De Errores
 
@@ -165,11 +172,11 @@ Los 10 microservicios de dominio tienen Swagger/OpenAPI con Springdoc.
 
 ## Docker Compose
 
-`docker-compose.yml` esta preparado como demo minima del flujo principal: `api-gateway`, `pedido-service`, `cliente-service`, `producto-service` y `estado-service`. No incluye todos los microservicios, lo que debe declararse como alcance de demo.
+`docker-compose.yml` esta preparado como demo minima del flujo principal. Para operar con Eureka real, la composicion debe levantar `discovery-server` antes de los microservicios y del `api-gateway`, y configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` hacia el servidor Eureka del entorno. No incluye todos los microservicios, lo que debe declararse como alcance de demo si se mantiene como demo minima.
 
 ## Render
 
-Render esta pendiente/configurable. No hay URLs publicas reales versionadas ni `render.yaml` existente. La documentacion de despliegue esta en `docs/render-deploy.md` con placeholders y variables necesarias.
+Render esta pendiente/configurable. No hay URLs publicas reales versionadas ni `render.yaml` existente. La documentacion de despliegue esta en `docs/render-deploy.md` con placeholders, incluyendo `discovery-server` y la variable `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`.
 
 # Ejecución desde cero
 
@@ -203,11 +210,27 @@ cd ..\metrica-service; .\mvnw.cmd clean verify
 cd ..\transportista-service; .\mvnw.cmd clean verify
 cd ..\log-service; .\mvnw.cmd clean verify
 cd ..\api-gateway; .\mvnw.cmd clean verify
+cd ..\discovery-server; .\mvnw.cmd clean verify
 ```
 
 ## Ejecutar Servicios Localmente
 
-Levantar cada servicio en una terminal distinta con su Maven Wrapper:
+Levantar cada servicio en una terminal distinta con su Maven Wrapper. El orden recomendado desde cero es:
+
+1. `discovery-server`
+2. microservicios de dominio
+3. `api-gateway`
+
+Primero iniciar Eureka:
+
+```powershell
+cd discovery-server
+.\mvnw.cmd spring-boot:run
+```
+
+Verificar la consola en `http://localhost:8761`.
+
+Luego iniciar los microservicios:
 
 ```powershell
 cd cliente-service

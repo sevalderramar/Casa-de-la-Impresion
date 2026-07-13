@@ -25,5 +25,5 @@ Esta matriz resume los requerimientos reales implementados y documentados para C
 | RNF-05 | No exponer credenciales reales | No funcional | Implementado | `.env.example` con placeholders | Revision de repositorio y README de seguridad |
 | RNF-06 | Facilitar ejecucion local | No funcional | Implementado | Perfiles `h2`, `application-h2.properties`, Maven Wrapper | `README.md`, builds `clean verify` |
 | RNF-07 | Facilitar demo Docker | No funcional | Parcial | `docker-compose.yml` para Gateway, pedido, cliente, producto y estado | `docker compose build/up`, README indica demo minima |
-| RNF-08 | Discovery o mecanismo equivalente | No funcional | Parcial documentado | Discovery actual por rutas estaticas y variables env en Gateway, sin Eureka real | `api-gateway/application.yml`, `README.md` |
+| RNF-08 | Discovery con Eureka Server | No funcional | Implementado | `discovery-server` en `8761`, microservicios y Gateway registrados como clientes Eureka, rutas `lb://` en Gateway | `discovery-server`, `api-gateway/application.yml`, rutas `lb://`, consola Eureka `http://localhost:8761` |
 | RNF-09 | Despliegue Render | No funcional | Pendiente/configurable | Documentacion con placeholders y variables en `docs/render-deploy.md` | Pendiente de URLs reales Render |

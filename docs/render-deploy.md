@@ -10,6 +10,7 @@ Las URLs son placeholders y deben reemplazarse por las URLs reales generadas por
 
 | Servicio | URL placeholder |
 |---|---|
+| `discovery-server` | `https://<discovery-server>.onrender.com` |
 | `api-gateway` | `https://<api-gateway>.onrender.com` |
 | `auth-service` | `https://<auth-service>.onrender.com` |
 | `pedido-service` | `https://<pedido-service>.onrender.com` |
@@ -37,12 +38,13 @@ Usar estos valores solo como placeholders. Reemplazar por las URLs reales asigna
 
 | Servicio | Variables adicionales |
 |---|---|
-| `api-gateway` | `PEDIDO_SERVICE_URL`, `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL` y opcionalmente URLs de los demas servicios si se externalizan todas las rutas |
-| `pedido-service` | `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL`, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| `metrica-service` | URLs de servicios consultados para metricas si aplica, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| `fabricacion-service` | `PEDIDO_SERVICE_URL` si usa integracion remota, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| `despacho-service` | `PEDIDO_SERVICE_URL` si usa integracion remota, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| Resto de microservicios | `JWT_SECRET`, `JWT_EXPIRATION_MS`, variables de base de datos si se reemplaza H2 |
+| `discovery-server` | Variables globales si aplica |
+| `api-gateway` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://<discovery-server>.onrender.com/eureka/` |
+| `pedido-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL`, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
+| `metrica-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, URLs de servicios consultados para metricas si aplica, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
+| `fabricacion-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `PEDIDO_SERVICE_URL` si usa integracion remota, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
+| `despacho-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `PEDIDO_SERVICE_URL` si usa integracion remota, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
+| Resto de microservicios | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `JWT_SECRET`, `JWT_EXPIRATION_MS`, variables de base de datos si se reemplaza H2 |
 
 ## Comando Build
 
@@ -70,6 +72,7 @@ java -jar target/pedido-service-0.0.1-SNAPSHOT.jar
 
 | Servicio | Puerto local | Render |
 |---|---:|---|
+| `discovery-server` | 8761 | Publicar servicio y usar su URL en `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` |
 | `api-gateway` | 8080 | Usa `PORT` |
 | `pedido-service` | 8081 | Usa `PORT` |
 | `cliente-service` | 8082 | Usa `PORT` |
@@ -86,19 +89,20 @@ Los servicios ya tienen `application-prod.properties` con `server.port=${PORT:pu
 
 ## Orden Sugerido De Despliegue
 
-1. `auth-service`
-2. `cliente-service`
-3. `producto-service`
-4. `estado-service`
-5. `pedido-service`
-6. `despacho-service`
-7. `fabricacion-service`
-8. `transportista-service`
-9. `log-service`
-10. `metrica-service`
-11. `api-gateway`
+1. `discovery-server`
+2. `auth-service`
+3. `cliente-service`
+4. `producto-service`
+5. `estado-service`
+6. `pedido-service`
+7. `despacho-service`
+8. `fabricacion-service`
+9. `transportista-service`
+10. `log-service`
+11. `metrica-service`
+12. `api-gateway`
 
-El Gateway debe configurarse al final porque necesita conocer las URLs publicas reales de los servicios destino.
+`discovery-server` debe publicarse primero para que los microservicios y el Gateway puedan registrarse. El Gateway debe configurarse al final porque depende del registry de Eureka y enruta mediante `lb://` hacia los servicios registrados.
 
 ## Como Configurar Cada Servicio En Render
 
@@ -114,16 +118,15 @@ El Gateway debe configurarse al final porque necesita conocer las URLs publicas 
 
 ## Discovery En Render
 
-El proyecto utiliza discovery estatico por configuracion del Gateway mediante rutas y variables de entorno. No se implemento Eureka Server real. El Gateway debe recibir las URLs publicas de cada servicio cuando sean publicadas en Render.
+El proyecto utiliza `discovery-server` con Eureka Server. En Render se debe crear un Web Service para `discovery-server` y usar su URL publica como `defaultZone` de todos los clientes Eureka.
 
 Ejemplo:
 
 ```properties
-PEDIDO_SERVICE_URL=https://<pedido-service>.onrender.com
-CLIENTE_SERVICE_URL=https://<cliente-service>.onrender.com
-PRODUCTO_SERVICE_URL=https://<producto-service>.onrender.com
-ESTADO_SERVICE_URL=https://<estado-service>.onrender.com
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://<discovery-server>.onrender.com/eureka/
 ```
+
+El `api-gateway` se registra como cliente Eureka y usa rutas `lb://`, por lo que no se deben documentar URLs reales de servicios mientras no existan despliegues verificados.
 
 ## Base De Datos
 
@@ -135,7 +138,9 @@ Para defensa local se usa H2. Para Render productivo, evaluar una base externa p
 |---|---|
 | URLs reales Render reemplazadas | Pendiente |
 | Variables `JWT_SECRET` configuradas en Render | Pendiente |
-| Gateway apuntando a URLs reales | Pendiente |
+| `discovery-server` desplegado primero | Pendiente |
+| `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` configurado en servicios y Gateway | Pendiente |
+| Gateway registrado en Eureka y rutas `lb://` verificadas | Pendiente |
 | Swagger probado en servicios desplegados | Pendiente |
 | `/actuator/health` probado donde aplique | Pendiente |
 | Base persistente definida o H2 justificado | Pendiente |
