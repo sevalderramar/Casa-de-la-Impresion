@@ -128,6 +128,29 @@ EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://<discovery-server>.onrender.com/eur
 
 El `api-gateway` se registra como cliente Eureka y usa rutas `lb://`, por lo que no se deben documentar URLs reales de servicios mientras no existan despliegues verificados.
 
+## Referencia Docker Validada
+
+La validacion local con Docker Compose ya funciona como demo minima del flujo principal con Eureka. Esta validacion no implica que Render este desplegado.
+
+Servicios incluidos en la demo Docker validada:
+
+- `discovery-server`
+- `api-gateway`
+- `cliente-service`
+- `producto-service`
+- `pedido-service`
+- `estado-service`
+
+Variables relevantes usadas localmente:
+
+```properties
+JWT_SECRET=clave-temporal-local-para-validacion-final-123456789
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+```
+
+En Render se debe reemplazar el `defaultZone` por `https://<discovery-server>.onrender.com/eureka/` cuando exista URL real.
+
 ## Base De Datos
 
 Para defensa local se usa H2. Para Render productivo, evaluar una base externa persistente por servicio o mantener H2 solo como demo temporal. Si se usa base persistente, revisar `application-prod.properties`, migraciones Flyway y `ddl-auto=validate`.

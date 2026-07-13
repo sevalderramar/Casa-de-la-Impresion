@@ -35,7 +35,9 @@ Las rutas mantienen los prefijos `/api/**`; el destino se resuelve desde el regi
 
 ## Docker
 
-Participa en la demo Docker junto con los servicios de dominio. Para operar con rutas `lb://`, la demo debe levantar primero `discovery-server` y configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`.
+Participa en la demo Docker minima validada junto con `discovery-server`, `cliente-service`, `producto-service`, `pedido-service` y `estado-service`. En Docker usa `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/` y se registra en Eureka como `API-GATEWAY`.
+
+Si una ruta `lb://` responde `503 Service Unavailable` inmediatamente despues del arranque, esperar 20-40 segundos y reintentar mientras el Gateway refresca el registry de Eureka.
 
 ## Swagger
 

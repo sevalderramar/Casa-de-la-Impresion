@@ -19,6 +19,12 @@ Centralizar el registro y descubrimiento de los 10 microservicios de dominio y d
 - Local: `http://localhost:8761/eureka/`
 - Docker/Render: configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` apuntando al servidor Eureka del entorno.
 
+En Docker Compose validado, la variable usada por Gateway y servicios demo es:
+
+```properties
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+```
+
 ## Ejecucion local
 
 Windows:
@@ -49,3 +55,15 @@ Los 10 microservicios de dominio se registran como clientes Eureka:
 - `log-service`
 
 El `api-gateway` tambien se registra como cliente Eureka y enruta hacia esos servicios mediante URIs `lb://`.
+
+## Demo Docker Validada
+
+Docker Compose corresponde a una demo minima validada del flujo principal. Incluye `discovery-server`, `api-gateway`, `cliente-service`, `producto-service`, `pedido-service` y `estado-service`.
+
+Durante la validacion Docker, Eureka mostro registrados y en estado `UP`:
+
+- `API-GATEWAY`
+- `CLIENTE-SERVICE`
+- `PRODUCTO-SERVICE`
+- `PEDIDO-SERVICE`
+- `ESTADO-SERVICE`

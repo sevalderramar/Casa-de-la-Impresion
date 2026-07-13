@@ -84,7 +84,7 @@ El Gateway contiene rutas para los 10 dominios principales: auth, pedidos, clien
 
 ## Docker
 
-Docker Compose esta definido como demo minima del flujo principal con Gateway, pedido, cliente, producto y estado. Para operar con Eureka real, se debe levantar `discovery-server` primero y configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`. No representa el despliegue completo de los 10 microservicios.
+Docker Compose corresponde a una demo minima validada del flujo principal con Eureka. Incluye `discovery-server`, Gateway, pedido, cliente, producto y estado. En la validacion, Eureka registro `API-GATEWAY`, `CLIENTE-SERVICE`, `PRODUCTO-SERVICE`, `PEDIDO-SERVICE` y `ESTADO-SERVICE`; los endpoints `/actuator/health`, `/api/clientes`, `/api/productos` y `/api/pedidos` respondieron 200 por Gateway. No representa el despliegue completo de los 10 microservicios.
 
 ## Render
 
@@ -99,6 +99,7 @@ Render esta documentado como configuracion preparada y pendiente de publicacion 
 | Falta evidencia de cobertura | JaCoCo en 10 microservicios |
 | Gateway limitado | Rutas centralizadas documentadas |
 | Discovery formal | Eureka Server agregado y Gateway actualizado a `lb://` |
+| Docker Compose con Eureka | Demo minima validada con discovery-server y Gateway `lb://` |
 | Documentacion final faltante | Carpeta `docs/` creada |
 | Falta coleccion REST | Archivo `.http` creado |
 

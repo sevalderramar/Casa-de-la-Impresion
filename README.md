@@ -139,14 +139,22 @@ cd api-gateway
 
 ## Demo Docker
 
-Para operar la demo Docker del flujo principal por Gateway con Eureka real, `discovery-server` debe levantarse antes del Gateway y los servicios deben recibir `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` apuntando al servidor Eureka del entorno.
+Docker Compose corresponde a una demo minima validada del flujo principal con Eureka real. No levanta los 10 microservicios; incluye solo discovery, Gateway y los servicios necesarios para probar clientes, productos, pedidos y estados.
 
-- `discovery-server` requerido para enrutamiento `lb://`
+- `discovery-server`
 - `api-gateway`
 - `cliente-service`
 - `producto-service`
 - `pedido-service`
 - `estado-service`
+
+Servicios registrados en Eureka durante la validacion Docker:
+
+- `API-GATEWAY`
+- `CLIENTE-SERVICE`
+- `PRODUCTO-SERVICE`
+- `PEDIDO-SERVICE`
+- `ESTADO-SERVICE`
 
 Servicios fuera de esta demo Docker inicial:
 
@@ -157,14 +165,18 @@ Servicios fuera de esta demo Docker inicial:
 - `transportista-service`
 - `log-service`
 
-Antes de levantar contenedores, configura `JWT_SECRET` en el entorno o en un archivo `.env` local no versionado:
+Antes de levantar contenedores, configura `JWT_SECRET` en el entorno o en un archivo `.env` local no versionado. Para la validacion local se uso un valor temporal:
 
 ```powershell
-$env:JWT_SECRET="<TU_JWT_SECRET_BASE64>"
+$env:JWT_SECRET="clave-temporal-local-para-validacion-final-123456789"
 $env:JWT_EXPIRATION_MS="86400000"
 ```
 
-Comandos Docker:
+Comandos Docker validados:
+
+```powershell
+docker compose config
+```
 
 ```powershell
 docker compose build
@@ -176,6 +188,28 @@ docker compose up -d
 
 ```powershell
 docker compose ps
+```
+
+Endpoints validados con respuesta HTTP 200:
+
+```powershell
+curl.exe http://localhost:8761
+```
+
+```powershell
+curl.exe http://localhost:8080/actuator/health
+```
+
+```powershell
+curl.exe http://localhost:8080/api/clientes
+```
+
+```powershell
+curl.exe http://localhost:8080/api/productos
+```
+
+```powershell
+curl.exe http://localhost:8080/api/pedidos
 ```
 
 ```powershell
@@ -195,6 +229,8 @@ Para Gateway con Eureka, la variable relevante del entorno Docker/Render es:
 ```properties
 EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
 ```
+
+La consola Eureka queda disponible en `http://localhost:8761` y el Gateway en `http://localhost:8080`. El Gateway puede tardar algunos segundos en resolver rutas `lb://` mientras refresca el registry de Eureka; si aparece `503 Service Unavailable` inmediatamente despues del arranque, esperar 20-40 segundos y reintentar.
 
 ## Comandos De Prueba
 

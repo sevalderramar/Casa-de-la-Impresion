@@ -172,7 +172,36 @@ Los 10 microservicios de dominio tienen Swagger/OpenAPI con Springdoc.
 
 ## Docker Compose
 
-`docker-compose.yml` esta preparado como demo minima del flujo principal. Para operar con Eureka real, la composicion debe levantar `discovery-server` antes de los microservicios y del `api-gateway`, y configurar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` hacia el servidor Eureka del entorno. No incluye todos los microservicios, lo que debe declararse como alcance de demo si se mantiene como demo minima.
+`docker-compose.yml` corresponde a una demo minima validada del flujo principal con Eureka real. Incluye `discovery-server`, `api-gateway`, `cliente-service`, `producto-service`, `pedido-service` y `estado-service`. No levanta los 10 microservicios de dominio.
+
+La demo Docker usa `discovery-server` en `http://localhost:8761`, `api-gateway` en `http://localhost:8080` y registra en Eureka las aplicaciones `API-GATEWAY`, `CLIENTE-SERVICE`, `PRODUCTO-SERVICE`, `PEDIDO-SERVICE` y `ESTADO-SERVICE`.
+
+Variables relevantes para la demo Docker:
+
+| Variable | Uso |
+|---|---|
+| `JWT_SECRET` | Secreto temporal/local para servicios demo |
+| `JWT_EXPIRATION_MS` | Duracion del token JWT |
+| `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` | `http://discovery-server:8761/eureka/` |
+
+Comandos validados:
+
+```powershell
+$env:JWT_SECRET="clave-temporal-local-para-validacion-final-123456789"
+$env:JWT_EXPIRATION_MS="86400000"
+docker compose config
+docker compose build
+docker compose up -d
+docker compose ps
+curl.exe http://localhost:8761
+curl.exe http://localhost:8080/actuator/health
+curl.exe http://localhost:8080/api/clientes
+curl.exe http://localhost:8080/api/productos
+curl.exe http://localhost:8080/api/pedidos
+docker compose down
+```
+
+El Gateway puede tardar algunos segundos en resolver rutas `lb://` mientras refresca el registry de Eureka. Si aparece `503 Service Unavailable` inmediatamente despues del arranque, esperar 20-40 segundos y reintentar.
 
 ## Render
 
