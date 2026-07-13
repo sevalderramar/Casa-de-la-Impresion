@@ -1,6 +1,6 @@
 # Log Service
 
-> Microservicio de registro centralizado de eventos operativos del ecosistema **Api Pedidos**.
+> Microservicio de registro centralizado de eventos operativos del ecosistema **Casa de la Impresion**.
 
 ## Descripcion General
 
@@ -84,7 +84,7 @@ log-service/
 
 ```text
 cliente-service ──POST /api/logs──►
-pedido-service  ──POST /api/logs──►  log-service (8089) ──► H2 (db_logs)
+pedido-service  ──POST /api/logs──►  log-service (8089) ──► H2 (log_db)
 fabricacion-service ──POST /api/logs──►
 ```
 

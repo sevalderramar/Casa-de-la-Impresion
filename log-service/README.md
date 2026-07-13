@@ -31,11 +31,12 @@ La configuracion actual de seguridad esta en modo demo/local: aunque existen fil
 
 ## Swagger
 
-Swagger no implementado actualmente.
+- Swagger UI: `http://localhost:8089/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8089/v3/api-docs`
 
 ## Tests
 
-Sin pruebas unitarias propias actualmente.
+37 tests pasando. Cobertura de lineas sobre 80% con JaCoCo.
 
 ## Ejecucion local
 

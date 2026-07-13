@@ -18,7 +18,7 @@ spring.profiles.active=h2
 ## Perfil H2 (`application-h2.properties`)
 
 ```properties
-spring.datasource.url=jdbc:h2:file:./data/log_service;AUTO_SERVER=TRUE
+spring.datasource.url=jdbc:h2:file:./data/log_db;DB_CLOSE_DELAY=-1
 spring.datasource.driver-class-name=org.h2.Driver
 spring.datasource.username=sa
 spring.datasource.password=
@@ -34,7 +34,7 @@ URL: `http://localhost:8089/h2-console`
 
 | Parametro | Valor |
 |---|---|
-| JDBC URL | `jdbc:h2:file:./data/log_service` |
+| JDBC URL | `jdbc:h2:file:./data/log_db` |
 | User Name | `sa` |
 | Password | *(vacio)* |
 

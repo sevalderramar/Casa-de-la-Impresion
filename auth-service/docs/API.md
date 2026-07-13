@@ -27,8 +27,8 @@ Autentica usuario y retorna JWT.
 **Request**
 ```json
 {
-  "email": "admin@casaimpresion.cl",
-  "password": "123456"
+  "email": "admin@empresa.com",
+  "password": "pass123"
 }
 ```
 
@@ -39,7 +39,7 @@ Autentica usuario y retorna JWT.
   "data": {
     "token": "eyJhbGciOiJIUzI1NiJ9...",
     "tipo": "Bearer",
-    "email": "admin@casaimpresion.cl",
+    "email": "admin@empresa.com",
     "rol": "ADMIN",
     "expiracion": 1760000000000
   },

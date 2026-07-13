@@ -30,15 +30,18 @@ Microservicio encargado de autenticar usuarios, emitir tokens JWT y administrar 
 - Perfil local: `h2`.
 - Base H2 real: `jdbc:h2:file:./data/auth_db;DB_CLOSE_DELAY=-1`.
 
-La configuracion actual de seguridad esta en modo demo/local: aunque existen filtros JWT, `SecurityConfig` termina permitiendo las solicitudes con `anyRequest().permitAll()`.
+JWT esta implementado. En modo demo/local se permiten explicitamente Swagger, H2, healthcheck y login para facilitar pruebas; los endpoints de usuarios mantienen reglas de rol/autenticacion en `SecurityConfig`.
+
+Credencial H2 de ejemplo cargada por `DataInitializer`: `admin@empresa.com` / `pass123`.
 
 ## Swagger
 
-Swagger no implementado actualmente.
+- Swagger UI: `http://localhost:8090/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8090/v3/api-docs`
 
 ## Tests
 
-Sin pruebas unitarias propias actualmente.
+50 tests pasando. Cobertura de lineas sobre 80% con JaCoCo.
 
 ## Ejecucion local
 

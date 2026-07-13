@@ -38,7 +38,7 @@ La configuracion actual de seguridad esta en modo demo/local: aunque existen fil
 
 ## Tests
 
-Sin pruebas unitarias propias actualmente.
+48 tests pasando. Cobertura de lineas sobre 80% con JaCoCo.
 
 ## Ejecucion local
 

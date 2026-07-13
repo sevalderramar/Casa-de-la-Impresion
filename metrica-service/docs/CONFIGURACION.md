@@ -5,7 +5,7 @@
 | Propiedad | Valor Base | Rol |
 |---|---|---|
 | `spring.application.name` | `metrica-service` | Identificador del microservicio. |
-| `server.port` | `8087` | **Corrección**: Desplazado al `8087` en lugar del `8086` para eludir la superposición con `fabricacion-service`. |
+| `server.port` | `8087` | Puerto local del microservicio de metricas; evita superposicion con `estado-service` en `8086`. |
 | `pedido.service.url` | `${PEDIDO_SERVICE_URL:http://localhost:8081}` | Puntero dinámico a Pedidos. |
 | `cliente.service.url` | `${CLIENTE_SERVICE_URL:http://localhost:8082}` | Puntero dinámico a Clientes. |
 | `spring.cloud.openfeign.okhttp.enabled` | `true` | Motor HTTP subyacente para conexiones más sólidas y rápidas. |
