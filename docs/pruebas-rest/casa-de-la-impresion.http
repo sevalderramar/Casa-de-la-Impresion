@@ -11,6 +11,12 @@
 @hostLog = http://localhost:8089
 @token = reemplazar-token-jwt-si-aplica
 
+@baseGatewayRender = https://api-gateway-c9qz.onrender.com
+@clienteRender = https://cliente-service-6yfy.onrender.com
+@productoRender = https://producto-service-ulv6.onrender.com
+@estadoRender = https://estado-service.onrender.com
+@pedidoRender = https://pedido-service-47kn.onrender.com
+
 ### Gateway health
 GET {{hostGateway}}/actuator/health
 
@@ -246,4 +252,106 @@ Content-Type: application/json
   "servicio": "",
   "operacion": "",
   "resultado": ""
+}
+
+### Render - Gateway health
+GET {{baseGatewayRender}}/actuator/health
+
+### Render - Gateway clientes
+GET {{baseGatewayRender}}/api/clientes
+
+### Render - Gateway productos
+GET {{baseGatewayRender}}/api/productos
+
+### Render - Gateway pedidos
+GET {{baseGatewayRender}}/api/pedidos
+
+### Render - Cliente directo crear
+POST {{clienteRender}}/api/clientes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Cliente Render Demo",
+  "rut": "11.111.111-1",
+  "email": "cliente.render.demo@empresa.cl",
+  "telefono": "+56 9 1111 1111",
+  "direccion": "Av. Demo Render 100",
+  "comuna": "Santiago",
+  "region": "Metropolitana"
+}
+
+### Render - Producto directo crear
+POST {{productoRender}}/api/productos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Producto Render Demo",
+  "descripcion": "Producto para validacion remota",
+  "categoria": "Imprenta",
+  "precio": 12990,
+  "stock": 50
+}
+
+### Render - Pedido directo crear
+POST {{pedidoRender}}/api/pedidos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "clienteId": 1,
+  "estado": "COLA",
+  "tipoDespacho": "RM",
+  "items": [
+    {
+      "productoId": 1,
+      "cantidad": 1
+    }
+  ]
+}
+
+### Render - Cliente por Gateway crear
+POST {{baseGatewayRender}}/api/clientes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Cliente Gateway Render",
+  "rut": "22.222.222-2",
+  "email": "cliente.gateway.render@empresa.cl",
+  "telefono": "+56 9 2222 2222",
+  "direccion": "Av. Gateway Render 200",
+  "comuna": "Santiago",
+  "region": "Metropolitana"
+}
+
+### Render - Producto por Gateway crear
+POST {{baseGatewayRender}}/api/productos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Producto Gateway Render",
+  "descripcion": "Producto para validacion por gateway remoto",
+  "categoria": "Imprenta",
+  "precio": 15990,
+  "stock": 30
+}
+
+### Render - Pedido por Gateway crear
+POST {{baseGatewayRender}}/api/pedidos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "clienteId": 1,
+  "estado": "COLA",
+  "tipoDespacho": "RM",
+  "items": [
+    {
+      "productoId": 1,
+      "cantidad": 1
+    }
+  ]
 }

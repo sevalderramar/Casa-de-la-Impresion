@@ -1,181 +1,236 @@
 # Despliegue Render
 
-## Estado Actual
+Este documento registra el despliegue remoto validado para la demo tecnica de Casa de la Impresion. No contiene secretos reales; `JWT_SECRET` debe configurarse en Render con un valor privado y aqui se documenta solo como placeholder.
 
-`discovery-server` ya fue desplegado y validado en Render como primer servicio del ecosistema. Los demas servicios siguen documentados con placeholders y no se afirma que `api-gateway` ni los microservicios de dominio ya esten desplegados.
+Autor: Sebastian Valderrama.
 
-Las URLs restantes son placeholders y deben reemplazarse por las URLs reales generadas por Render antes de registrar la entrega en AVA.
+## URLs Render Validadas
 
-## URLs Placeholder
+| Servicio | URL | Endpoint validado |
+|---|---|---|
+| `discovery-server` | `https://discovery-server-gjd0.onrender.com` | `https://discovery-server-gjd0.onrender.com/eureka/apps` |
+| `api-gateway` | `https://api-gateway-c9qz.onrender.com` | `https://api-gateway-c9qz.onrender.com/actuator/health` |
+| `cliente-service` | `https://cliente-service-6yfy.onrender.com` | `https://cliente-service-6yfy.onrender.com/api/clientes` |
+| `producto-service` | `https://producto-service-ulv6.onrender.com` | `https://producto-service-ulv6.onrender.com/api/productos` |
+| `estado-service` | `https://estado-service.onrender.com` | `https://estado-service.onrender.com/swagger-ui/index.html` |
+| `pedido-service` | `https://pedido-service-47kn.onrender.com` | `https://pedido-service-47kn.onrender.com/api/pedidos` |
 
-| Servicio | URL placeholder |
-|---|---|
-| `discovery-server` | `https://discovery-server-gjd0.onrender.com` |
-| `api-gateway` | `https://<api-gateway>.onrender.com` |
-| `auth-service` | `https://<auth-service>.onrender.com` |
-| `pedido-service` | `https://<pedido-service>.onrender.com` |
-| `cliente-service` | `https://<cliente-service>.onrender.com` |
-| `producto-service` | `https://<producto-service>.onrender.com` |
-| `estado-service` | `https://<estado-service>.onrender.com` |
-| `despacho-service` | `https://<despacho-service>.onrender.com` |
-| `fabricacion-service` | `https://<fabricacion-service>.onrender.com` |
-| `metrica-service` | `https://<metrica-service>.onrender.com` |
-| `transportista-service` | `https://<transportista-service>.onrender.com` |
-| `log-service` | `https://<log-service>.onrender.com` |
+Endpoints Gateway Render validados:
 
-Usar los valores con `<...>` solo como placeholders. `discovery-server` ya tiene URL real validada; reemplazar los demas servicios por las URLs reales asignadas por Render antes de la entrega formal.
-
-## Evidencia Discovery Server Render
-
-| Evidencia | Valor |
-|---|---|
-| Render deploy | Exitoso |
-| URL publica | `https://discovery-server-gjd0.onrender.com` |
-| Eureka apps endpoint | `https://discovery-server-gjd0.onrender.com/eureka/` |
-| Estado | `discovery-server` desplegado; clientes pendientes |
-
-## Variables De Entorno Globales
-
-| Variable | Valor sugerido |
-|---|---|
-| `JWT_SECRET` | Secreto Base64 real, no versionado |
-| `JWT_EXPIRATION_MS` | `86400000` |
-| `SPRING_PROFILES_ACTIVE` | `prod` o `h2` segun estrategia de despliegue |
-| `PORT` | Render lo asigna automaticamente |
-
-## Variables Por Servicio
-
-| Servicio | Variables adicionales |
-|---|---|
-| `discovery-server` | Variables globales si aplica |
-| `api-gateway` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/` |
-| `pedido-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL`, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| `metrica-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, URLs de servicios consultados para metricas si aplica, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| `fabricacion-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `PEDIDO_SERVICE_URL` si usa integracion remota, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| `despacho-service` | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `PEDIDO_SERVICE_URL` si usa integracion remota, `JWT_SECRET`, `JWT_EXPIRATION_MS` |
-| Resto de microservicios | `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`, `JWT_SECRET`, `JWT_EXPIRATION_MS`, variables de base de datos si se reemplaza H2 |
-
-## Comando Build
-
-En Render, configurar cada servicio desde su subdirectorio correspondiente.
-
-Si se usa el `Dockerfile` de cada servicio, configurar el Web Service con entorno Docker y usar el subdirectorio del servicio como root directory. En ese caso Render ejecuta el build definido en el Dockerfile y no requiere configurar comandos Maven manuales.
-
-```bash
-./mvnw clean package -DskipTests
+```text
+https://api-gateway-c9qz.onrender.com/api/clientes
+https://api-gateway-c9qz.onrender.com/api/productos
+https://api-gateway-c9qz.onrender.com/api/pedidos
 ```
 
-En Windows local se usa `.\mvnw.cmd`, pero Render ejecuta Linux y debe usar `./mvnw`.
+Swagger Render validado:
 
-## Comando Start
-
-```bash
-java -jar target/*.jar
+```text
+https://cliente-service-6yfy.onrender.com/swagger-ui/index.html
+https://producto-service-ulv6.onrender.com/swagger-ui/index.html
+https://estado-service.onrender.com/swagger-ui/index.html
+https://pedido-service-47kn.onrender.com/swagger-ui/index.html
 ```
 
-Si Render requiere un jar exacto, usar el nombre generado por cada modulo, por ejemplo:
-
-```bash
-java -jar target/pedido-service-0.0.1-SNAPSHOT.jar
-```
-
-## Puertos
-
-| Servicio | Puerto local | Render |
-|---|---:|---|
-| `discovery-server` | 8761 | Publicar servicio y usar su URL en `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` |
-| `api-gateway` | 8080 | Usa `PORT` |
-| `pedido-service` | 8081 | Usa `PORT` |
-| `cliente-service` | 8082 | Usa `PORT` |
-| `producto-service` | 8083 | Usa `PORT` |
-| `despacho-service` | 8084 | Usa `PORT` |
-| `fabricacion-service` | 8085 | Usa `PORT` |
-| `estado-service` | 8086 | Usa `PORT` |
-| `metrica-service` | 8087 | Usa `PORT` |
-| `transportista-service` | 8088 | Usa `PORT` |
-| `log-service` | 8089 | Usa `PORT` |
-| `auth-service` | 8090 | Usa `PORT` |
-
-Los servicios ya tienen `application-prod.properties` con `server.port=${PORT:puerto-local-del-servicio}` en los microservicios. La demo H2 principal (`pedido-service`, `cliente-service`, `producto-service` y `estado-service`) y `api-gateway` tambien respetan `PORT`, por lo que pueden arrancar correctamente en Render usando el puerto asignado por la plataforma.
-
-## Orden Sugerido De Despliegue
+## Orden Recomendado De Despliegue
 
 1. `discovery-server`
-2. `auth-service`
-3. `cliente-service`
-4. `producto-service`
-5. `estado-service`
-6. `pedido-service`
-7. `despacho-service`
-8. `fabricacion-service`
-9. `transportista-service`
-10. `log-service`
-11. `metrica-service`
-12. `api-gateway`
+2. `cliente-service`
+3. `producto-service`
+4. `estado-service`
+5. `pedido-service`
+6. `api-gateway`
 
-`discovery-server` debe publicarse primero para que los microservicios y el Gateway puedan registrarse. El Gateway debe configurarse al final porque depende del registry de Eureka y enruta mediante `lb://` hacia los servicios registrados.
+`discovery-server` debe existir primero. El Gateway se despliega al final porque depende del registry Eureka y enruta con `lb://` hacia servicios registrados.
 
-## Como Configurar Cada Servicio En Render
+## Configuracion Global
 
-1. Crear nuevo Web Service desde el repositorio.
-2. Seleccionar el subdirectorio del servicio como root directory.
-3. Usar entorno Java.
-4. Configurar build command: `./mvnw clean package -DskipTests`.
-5. Configurar start command: `java -jar target/*.jar`.
-6. Agregar variables de entorno requeridas.
-7. Verificar `/actuator/health` si el servicio lo expone.
-8. Verificar Swagger en `/swagger-ui/index.html`.
-9. Copiar URL publica real al documento final antes de AVA.
+Todos los servicios se configuran como Web Service en Render desde el repositorio `https://github.com/sevalderramar/Casa-de-la-Impresion`.
 
-## Discovery En Render
+Render Free puede dormir servicios por inactividad. Para la demo tecnica se recomienda despertar cada servicio con `/actuator/health`, revisar Eureka y despues probar Gateway.
 
-El proyecto utiliza `discovery-server` con Eureka Server. El Web Service de `discovery-server` ya esta publicado en Render y su URL publica debe usarse como `defaultZone` de todos los clientes Eureka.
+Variables base para microservicios desplegados con perfil H2 de demo:
 
-Ejemplo:
+```properties
+SPRING_PROFILES_ACTIVE=h2
+JWT_SECRET=<JWT_SECRET_RENDER>
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+EUREKA_CLIENT_FETCH_REGISTRY=true
+```
+
+No versionar el valor real de `JWT_SECRET`.
+
+## Configuracion Por Servicio
+
+### discovery-server
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `discovery-server` |
+| Environment | Docker |
+| Dockerfile Path | `Dockerfile` |
+| Puerto local fallback | `8761` |
+| URL Render | `https://discovery-server-gjd0.onrender.com` |
+
+Variables:
+
+```properties
+PORT=<asignado por Render>
+```
+
+### cliente-service
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `cliente-service` |
+| Environment | Docker |
+| Dockerfile Path | `Dockerfile` |
+| Puerto local fallback | `8082` |
+| URL Render | `https://cliente-service-6yfy.onrender.com` |
+
+Variables:
+
+```properties
+SPRING_PROFILES_ACTIVE=h2
+JWT_SECRET=<JWT_SECRET_RENDER>
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+EUREKA_CLIENT_FETCH_REGISTRY=true
+EUREKA_INSTANCE_HOSTNAME=cliente-service-6yfy.onrender.com
+EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+EUREKA_INSTANCE_SECURE_PORT_ENABLED=true
+EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED=false
+EUREKA_INSTANCE_SECURE_PORT=443
+```
+
+### producto-service
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `producto-service` |
+| Environment | Docker |
+| Dockerfile Path | `Dockerfile` |
+| Puerto local fallback | `8083` |
+| URL Render | `https://producto-service-ulv6.onrender.com` |
+
+Variables:
+
+```properties
+SPRING_PROFILES_ACTIVE=h2
+JWT_SECRET=<JWT_SECRET_RENDER>
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+EUREKA_CLIENT_FETCH_REGISTRY=true
+EUREKA_INSTANCE_HOSTNAME=producto-service-ulv6.onrender.com
+EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+EUREKA_INSTANCE_SECURE_PORT_ENABLED=true
+EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED=false
+EUREKA_INSTANCE_SECURE_PORT=443
+```
+
+### estado-service
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `estado-service` |
+| Environment | Docker |
+| Dockerfile Path | `Dockerfile` |
+| Puerto local fallback | `8086` |
+| URL Render | `https://estado-service.onrender.com` |
+
+Variables:
+
+```properties
+SPRING_PROFILES_ACTIVE=h2
+JWT_SECRET=<JWT_SECRET_RENDER>
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+EUREKA_CLIENT_FETCH_REGISTRY=true
+EUREKA_INSTANCE_HOSTNAME=estado-service.onrender.com
+EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+EUREKA_INSTANCE_SECURE_PORT_ENABLED=true
+EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED=false
+EUREKA_INSTANCE_SECURE_PORT=443
+```
+
+### pedido-service
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `pedido-service` |
+| Environment | Docker |
+| Dockerfile Path | `Dockerfile` |
+| Puerto local fallback | `8081` |
+| URL Render | `https://pedido-service-47kn.onrender.com` |
+
+Variables:
+
+```properties
+SPRING_PROFILES_ACTIVE=h2
+JWT_SECRET=<JWT_SECRET_RENDER>
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+EUREKA_CLIENT_FETCH_REGISTRY=true
+EUREKA_INSTANCE_HOSTNAME=pedido-service-47kn.onrender.com
+EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+EUREKA_INSTANCE_SECURE_PORT_ENABLED=true
+EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED=false
+EUREKA_INSTANCE_SECURE_PORT=443
+CLIENTE_SERVICE_URL=https://cliente-service-6yfy.onrender.com
+PRODUCTO_SERVICE_URL=https://producto-service-ulv6.onrender.com
+ESTADO_SERVICE_URL=https://estado-service.onrender.com
+FEIGN_CONNECT_TIMEOUT_MS=3000
+FEIGN_READ_TIMEOUT_MS=5000
+```
+
+### api-gateway
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `api-gateway` |
+| Environment | Docker |
+| Dockerfile Path | `Dockerfile` |
+| Puerto local fallback | `8080` |
+| URL Render | `https://api-gateway-c9qz.onrender.com` |
+
+Variables:
 
 ```properties
 EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+EUREKA_CLIENT_FETCH_REGISTRY=true
 ```
 
-El `api-gateway` se registra como cliente Eureka y usa rutas `lb://`, pero aun no se afirma que este desplegado en Render. No se deben documentar URLs reales de Gateway o microservicios mientras no existan despliegues verificados.
+## Solucion De Errores Gateway 503/500
 
-## Referencia Docker Validada
+Si el Gateway responde `503 Service Unavailable` o `500` en Render, revisar en este orden:
 
-La validacion local con Docker Compose ya funciona como demo minima del flujo principal con Eureka. Esta validacion no implica que Render este desplegado.
+| Causa | Diagnostico | Solucion |
+|---|---|---|
+| Servicios dormidos en Render Free | El health tarda o falla despues de inactividad | Abrir `/actuator/health` de cada microservicio y esperar a que despierte |
+| Eureka sin servicios registrados | `eureka/apps` no muestra `CLIENTE-SERVICE`, `PRODUCTO-SERVICE`, `ESTADO-SERVICE`, `PEDIDO-SERVICE` | Despertar servicios y confirmar `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` |
+| Hostname interno de Render | Eureka muestra instancias, pero Gateway no puede llamarlas | Configurar `EUREKA_INSTANCE_HOSTNAME`, `EUREKA_INSTANCE_SECURE_PORT_ENABLED=true`, `EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED=false`, `EUREKA_INSTANCE_SECURE_PORT=443` |
+| Pedido no encuentra dependencias | `pedido-service` falla al crear pedidos | Configurar `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL` con URLs Render reales |
+| Registry aun refrescando | Error justo despues de levantar servicios | Esperar 20-60 segundos y reintentar |
 
-Servicios incluidos en la demo Docker validada:
+## Flujo De Validacion Remota
 
-- `discovery-server`
-- `api-gateway`
-- `cliente-service`
-- `producto-service`
-- `pedido-service`
-- `estado-service`
+1. Abrir `https://discovery-server-gjd0.onrender.com`.
+2. Despertar `cliente-service`, `producto-service`, `estado-service`, `pedido-service` y `api-gateway` con `/actuator/health` cuando aplique.
+3. Revisar `https://discovery-server-gjd0.onrender.com/eureka/apps`.
+4. Probar `https://api-gateway-c9qz.onrender.com/api/clientes`.
+5. Probar `https://api-gateway-c9qz.onrender.com/api/productos`.
+6. Probar `https://api-gateway-c9qz.onrender.com/api/pedidos`.
+7. Abrir Swagger directo en cliente, producto, estado y pedido.
 
-Variables relevantes usadas localmente:
-
-```properties
-JWT_SECRET=clave-temporal-local-para-validacion-final-123456789
-JWT_EXPIRATION_MS=86400000
-EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-```
-
-En Render se debe usar `https://discovery-server-gjd0.onrender.com/eureka/` como `defaultZone` para Gateway y microservicios cuando se desplieguen.
+Nota: la ruta raiz `/` de cada microservicio no es endpoint funcional obligatorio. Puede responder `404` o `500`; validar con `/actuator/health`, Swagger, `/v3/api-docs` y `/api/**`.
 
 ## Base De Datos
 
-Para defensa local se usa H2. Para Render productivo, evaluar una base externa persistente por servicio o mantener H2 solo como demo temporal. Si se usa H2 en Render, configurar `SPRING_PROFILES_ACTIVE=h2` y asumir que la persistencia puede ser efimera. Si se usa base persistente, revisar `application-prod.properties`, migraciones Flyway y `ddl-auto=validate`.
-
-## Checklist Antes De AVA
-
-| Item | Estado |
-|---|---|
-| URL real `discovery-server` reemplazada | Listo |
-| URLs reales de Gateway y microservicios reemplazadas | Pendiente |
-| Variables `JWT_SECRET` configuradas en Render | Pendiente |
-| `discovery-server` desplegado primero | Listo |
-| `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE` configurado en servicios y Gateway | Pendiente |
-| Gateway registrado en Eureka y rutas `lb://` verificadas | Pendiente |
-| Swagger probado en servicios desplegados | Pendiente |
-| `/actuator/health` probado donde aplique | Pendiente |
-| Base persistente definida o H2 justificado | Pendiente |
+La demo Render usa `SPRING_PROFILES_ACTIVE=h2`. H2 en Render sirve para demostracion temporal; la persistencia puede perderse si el contenedor se recicla. Para produccion real, configurar una base externa por servicio, revisar `application-prod.properties`, migraciones Flyway y `ddl-auto=validate`.
