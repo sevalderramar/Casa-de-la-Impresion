@@ -165,13 +165,6 @@ Servicios fuera de esta demo Docker inicial:
 - `transportista-service`
 - `log-service`
 
-Antes de levantar contenedores, configura `JWT_SECRET` en el entorno o en un archivo `.env` local no versionado. Para la validacion local se uso un valor temporal:
-
-```powershell
-$env:JWT_SECRET="clave-temporal-local-para-validacion-final-123456789"
-$env:JWT_EXPIRATION_MS="86400000"
-```
-
 Comandos Docker validados:
 
 ```powershell
