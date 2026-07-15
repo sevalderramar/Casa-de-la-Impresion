@@ -24,7 +24,7 @@ Este documento registra como evolucionaron los requerimientos durante el semestr
 | LR-18 | Documentacion formal final | Se crea carpeta `docs/` con entregables | La pauta exige documentos separados para cierre | Implementado | `docs/documentacion-tecnica.md`, `docs/documentacion-funcional.md`, matriz y defensa |
 | LR-19 | Coleccion REST | Se crea archivo `.http` local y remoto | Permite demostrar endpoints sin Postman obligatorio | Implementado | `docs/pruebas-rest/casa-de-la-impresion.http` con variables Render |
 | LR-20 | No exponer credenciales | Se usa `.env.example` con placeholders | Seguridad y buenas practicas | Implementado | `.env.example`, README, busqueda de secretos sin valores reales |
-| LR-21 | Evidencias de entrega | Se crea estructura para capturas | Faltan screenshots finales en repositorio | Pendiente de adjuntar | `docs/evidencias/README.md` y subcarpetas |
+| LR-21 | Evidencias de entrega | Se incorporan capturas reales en las carpetas de evidencias | Render Dashboard, Eureka Discovery, Swagger/OpenAPI y API Gateway tienen capturas reales | Implementado | `docs/evidencias/render/`, `docs/evidencias/eureka/`, `docs/evidencias/swagger/`, `docs/evidencias/gateway/` |
 
 ## Alcance Render Final
 

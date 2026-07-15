@@ -2,7 +2,7 @@
 
 Sistema backend para la gestion de pedidos de Casa de la Impresion. El proyecto esta construido con microservicios Java/Spring Boot, Eureka Discovery, API Gateway, Swagger/OpenAPI, pruebas unitarias con JUnit/Mockito/JaCoCo, Docker Compose local y despliegue remoto en Render para la demo tecnica principal.
 
-Proyecto individual desarrollado por Sebastian Valderrama. No existe equipo asociado; la defensa se documenta como defensa tecnica individual.
+El proyecto fue desarrollado de forma individual por Sebastian Valderrama. La defensa tecnica se documenta como defensa individual en `docs/defensa-individual/valderrama-sebastian.md`.
 
 Repositorio: https://github.com/sevalderramar/Casa-de-la-Impresion
 

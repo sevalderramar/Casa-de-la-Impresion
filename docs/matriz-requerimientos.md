@@ -2,7 +2,7 @@
 
 Esta matriz resume requerimientos funcionales y no funcionales implementados para Casa de la Impresion. El proyecto corresponde a una entrega individual de Sebastian Valderrama.
 
-| ID | Requerimiento declarado por el equipo | Tipo | Estado | Endpoint o evidencia | Prueba asociada |
+| ID | Requerimiento declarado para el proyecto | Tipo | Estado | Endpoint o evidencia | Prueba asociada |
 |---|---|---|---|---|---|
 | RF-01 | Crear pedido asociado a cliente y productos | Funcional | Implementado | `POST /api/pedidos`, `https://pedido-service-47kn.onrender.com/api/pedidos` | `PedidoControllerTest`, `PedidoServiceTest`, prueba REST Render |
 | RF-02 | Listar pedidos registrados | Funcional | Implementado | `GET /api/pedidos`, Gateway `/api/pedidos` | `PedidoControllerTest`, Gateway Render validado |
@@ -30,4 +30,4 @@ Esta matriz resume requerimientos funcionales y no funcionales implementados par
 | RNF-10 | Interaccion entre servicios | No funcional | Implementado | `pedido-service` integra cliente, producto y estado; Gateway usa Eureka | `CLIENTE_SERVICE_URL`, `PRODUCTO_SERVICE_URL`, `ESTADO_SERVICE_URL`, pruebas REST |
 | RNF-11 | Seguridad de secretos | No funcional | Implementado | `.env.example`, `jwt.secret=${JWT_SECRET}` | Busqueda sin secretos reales; placeholders documentados |
 | RNF-12 | Documentacion de entrega | No funcional | Implementado | README, docs tecnica/funcional/matriz/render/defensa | Archivos bajo `docs/` |
-| RNF-13 | Evidencias de screenshots | No funcional | Pendiente de adjuntar | `docs/evidencias/` preparado | README de evidencias con lista esperada |
+| RNF-13 | Evidencias de screenshots | No funcional | Implementado | `docs/evidencias/render/`, `docs/evidencias/eureka/`, `docs/evidencias/swagger/`, `docs/evidencias/gateway/` | Capturas reales de Render Dashboard, Eureka Discovery, Swagger/OpenAPI y API Gateway incorporadas en `docs/evidencias/` |

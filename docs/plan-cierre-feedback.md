@@ -17,10 +17,10 @@ Este plan resume observaciones corregidas para la entrega final transversal DSY1
 | FB-11 | Falta documentacion funcional | Se documento problema, actores, reglas, flujos y datos de prueba | `docs/documentacion-funcional.md` | Flujo cliente -> producto -> pedido -> estado -> gateway documentado | Cerrado |
 | FB-12 | Falta documentacion tecnica desde cero | Se agrego guia tecnica con local, Docker, Render, Swagger y pruebas | `docs/documentacion-tecnica.md` | Seccion `Ejecucion desde cero` y comandos Windows/Linux | Cerrado |
 | FB-13 | Falta evidencia REST remota | Se agregaron variables y requests Render al archivo `.http` | `docs/pruebas-rest/casa-de-la-impresion.http` | Requests Gateway, directos, invalidos y recursos inexistentes | Cerrado |
-| FB-14 | Falta presentacion tecnica de defensa | Se aclara que el proyecto es individual y se crea presentacion tecnica individual | `docs/presentacion-defensa-grupal.md` | Documento indica modalidad individual desde el inicio | Cerrado |
-| FB-15 | Falta defensa individual | Se actualiza defensa individual con rol integral y dificultad Render/Eureka | `docs/defensa-individual/valderrama-sebastian.md` | Tareas, commits, endpoints, reglas y evidencias pendientes | Cerrado |
+| FB-14 | Defensa tecnica individual documentada | Se documento la defensa individual del proyecto, incluyendo rol, modulos implementados, commits, endpoints, pruebas, dificultades tecnicas y evidencias. | `docs/defensa-individual/valderrama-sebastian.md` | Documento de defensa individual disponible | Implementado |
+| FB-15 | Falta defensa individual | Se actualiza defensa individual con rol integral y dificultad Render/Eureka | `docs/defensa-individual/valderrama-sebastian.md` | Tareas, commits, endpoints, reglas y evidencias incorporadas | Cerrado |
 | FB-16 | No exponer credenciales | Se usan placeholders y `.env.example` seguro | `.env.example`, README, docs | Sin secretos reales versionados | Cerrado |
-| FB-17 | Evidencias/screenshots no incorporadas | Se crea estructura para adjuntar capturas finales | `docs/evidencias/**/README.md` | Carpetas versionables listas para informe final | Pendiente de adjuntar capturas |
+| FB-17 | Evidencias/screenshots incorporadas | Se incorporaron capturas reales de Render Dashboard, Eureka Discovery, Swagger/OpenAPI y API Gateway. | `docs/evidencias/render/`, `docs/evidencias/eureka/`, `docs/evidencias/swagger/`, `docs/evidencias/gateway/` | Capturas reales incorporadas en `docs/evidencias/` | Implementado |
 
 ## Estado Render Final
 
@@ -41,4 +41,4 @@ Render principal esta implementado y validado para el flujo tecnico principal: `
 
 ## Limitaciones Documentadas
 
-Render Free puede dormir servicios por inactividad; antes de la demo se deben despertar con `/actuator/health`. H2 remoto se usa como demo temporal, no como base productiva persistente. Las capturas finales quedan pendientes de incorporar en `docs/evidencias/` o informe final.
+Render Free puede dormir servicios por inactividad; antes de la demo se deben despertar con `/actuator/health`. H2 remoto se usa como demo temporal, no como base productiva persistente. Las capturas finales estan incorporadas en `docs/evidencias/` para Render Dashboard, Eureka Discovery, Swagger/OpenAPI y API Gateway.
