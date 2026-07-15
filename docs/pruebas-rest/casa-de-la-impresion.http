@@ -16,6 +16,7 @@
 @productoRender = https://producto-service-ulv6.onrender.com
 @estadoRender = https://estado-service.onrender.com
 @pedidoRender = https://pedido-service-47kn.onrender.com
+@discoveryRender = https://discovery-server-gjd0.onrender.com
 
 ### Gateway health
 GET {{hostGateway}}/actuator/health
@@ -257,6 +258,12 @@ Content-Type: application/json
 ### Render - Gateway health
 GET {{baseGatewayRender}}/actuator/health
 
+### Render - Eureka apps
+GET {{discoveryRender}}/eureka/apps
+
+### Render - Estado health
+GET {{estadoRender}}/actuator/health
+
 ### Render - Gateway clientes
 GET {{baseGatewayRender}}/api/clientes
 
@@ -265,6 +272,18 @@ GET {{baseGatewayRender}}/api/productos
 
 ### Render - Gateway pedidos
 GET {{baseGatewayRender}}/api/pedidos
+
+### Render - Cliente directo listar
+GET {{clienteRender}}/api/clientes
+
+### Render - Producto directo listar
+GET {{productoRender}}/api/productos
+
+### Render - Pedido directo listar
+GET {{pedidoRender}}/api/pedidos
+
+### Render - Estado recurso inexistente esperado 404
+GET {{estadoRender}}/api/estados/pedido/999999/ultimo
 
 ### Render - Cliente directo crear
 POST {{clienteRender}}/api/clientes
@@ -355,3 +374,23 @@ Authorization: Bearer {{token}}
     }
   ]
 }
+
+### Render - Pedido invalido esperado 400/404 por cliente inexistente
+POST {{baseGatewayRender}}/api/pedidos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "clienteId": 999999,
+  "estado": "COLA",
+  "tipoDespacho": "RM",
+  "items": [
+    {
+      "productoId": 1,
+      "cantidad": 1
+    }
+  ]
+}
+
+### Render - Gateway posible 503 si servicios estan dormidos
+GET {{baseGatewayRender}}/api/clientes

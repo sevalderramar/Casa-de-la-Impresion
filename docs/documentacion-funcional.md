@@ -42,6 +42,7 @@ Casa de la Impresion necesita administrar pedidos de impresion desde el registro
 4. `pedido-service` valida datos remotos con Feign cuando corresponde.
 5. Registrar estado inicial o cambio de estado en `estado-service`.
 6. Consultar pedido, historial y estado actual desde Gateway o servicio directo.
+7. Validar el flujo remoto principal en Render mediante Gateway: cliente, producto y pedido.
 
 ### Flujo De Fabricacion
 
@@ -102,7 +103,8 @@ Los estados finales documentados por `pedido-service` son los siguientes:
 | Demo local usa H2 | Facilita evaluacion sin infraestructura externa |
 | Docker Compose es demo minima | Cubre Gateway, pedido, cliente, producto y estado |
 | Discovery usa Eureka | Los servicios se registran en `discovery-server` y el Gateway mantiene prefijos `/api/**` |
-| Render no tiene URLs publicas versionadas | Se documenta configuracion con placeholders |
+| Render Free puede dormir servicios | Antes de la demo se despiertan con `/actuator/health` |
+| H2 remoto es temporal | Sirve para demo tecnica, no para persistencia productiva |
 | Endpoints demo/local estan permitidos para facilitar pruebas | JWT esta implementado, pero la demo prioriza ejecucion evaluable |
 
 ## Ejemplos De Uso
@@ -135,6 +137,15 @@ GET http://localhost:8080/api/productos
 ```http
 GET http://localhost:8080/api/pedidos/1001
 ```
+
+### Flujo Principal Validado En Render
+
+1. Crear cliente en `https://cliente-service-6yfy.onrender.com/api/clientes` o por Gateway.
+2. Crear producto en `https://producto-service-ulv6.onrender.com/api/productos` o por Gateway.
+3. Crear pedido en `https://pedido-service-47kn.onrender.com/api/pedidos` usando IDs existentes.
+4. Consultar cliente, producto y pedido desde `https://api-gateway-c9qz.onrender.com`.
+5. Validar estado de servicios en Eureka: `https://discovery-server-gjd0.onrender.com/eureka/apps`.
+6. Validar estado-service con `https://estado-service.onrender.com/actuator/health`.
 
 ## Datos De Prueba Sugeridos
 

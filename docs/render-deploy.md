@@ -12,7 +12,7 @@ Autor: Sebastian Valderrama.
 | `api-gateway` | `https://api-gateway-c9qz.onrender.com` | `https://api-gateway-c9qz.onrender.com/actuator/health` |
 | `cliente-service` | `https://cliente-service-6yfy.onrender.com` | `https://cliente-service-6yfy.onrender.com/api/clientes` |
 | `producto-service` | `https://producto-service-ulv6.onrender.com` | `https://producto-service-ulv6.onrender.com/api/productos` |
-| `estado-service` | `https://estado-service.onrender.com` | `https://estado-service.onrender.com/swagger-ui/index.html` |
+| `estado-service` | `https://estado-service.onrender.com` | `https://estado-service.onrender.com/actuator/health` y Swagger |
 | `pedido-service` | `https://pedido-service-47kn.onrender.com` | `https://pedido-service-47kn.onrender.com/api/pedidos` |
 
 Endpoints Gateway Render validados:
@@ -31,6 +31,16 @@ https://producto-service-ulv6.onrender.com/swagger-ui/index.html
 https://estado-service.onrender.com/swagger-ui/index.html
 https://pedido-service-47kn.onrender.com/swagger-ui/index.html
 ```
+
+Flujo funcional Render validado:
+
+1. Cliente creado y consultado.
+2. Producto creado y consultado.
+3. Pedido creado con `clienteId` y `productoId` existentes.
+4. Pedido consultado desde `pedido-service`.
+5. Cliente, producto y pedido consultados desde API Gateway.
+6. Eureka muestra servicios registrados en estado `UP`.
+7. `estado-service` validado con `/actuator/health`.
 
 ## Orden Recomendado De Despliegue
 
@@ -234,3 +244,7 @@ Nota: la ruta raiz `/` de cada microservicio no es endpoint funcional obligatori
 ## Base De Datos
 
 La demo Render usa `SPRING_PROFILES_ACTIVE=h2`. H2 en Render sirve para demostracion temporal; la persistencia puede perderse si el contenedor se recicla. Para produccion real, configurar una base externa por servicio, revisar `application-prod.properties`, migraciones Flyway y `ddl-auto=validate`.
+
+## Evidencias Pendientes
+
+Las capturas finales deben incorporarse en `docs/evidencias/` o en el informe final. Se esperan evidencias de Render dashboard, Eureka con servicios `UP`, Swagger cliente/producto/pedido/estado, Gateway clientes/productos/pedidos, GitHub con ultimo commit y README con URLs Render.

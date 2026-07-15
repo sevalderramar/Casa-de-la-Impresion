@@ -1,135 +1,103 @@
 # Defensa Individual - Sebastian Valderrama
 
-## Rol
+## Identificación
 
-Rol principal: desarrollador unico y responsable integral del proyecto. Sebastian Valderrama realizo individualmente la arquitectura de microservicios, backend, API Gateway, pruebas automatizadas, documentacion Swagger/OpenAPI, documentacion final y cierre de feedback.
-
-## Modulos Desarrollados Y Cerrados
-
-| Modulo | Trabajo realizado |
+| Campo | Valor |
 |---|---|
-| `auth-service` | Ampliacion de cobertura, Swagger y revision de seguridad JWT |
-| `estado-service` | Cobertura, Swagger y documentacion de estados |
-| `transportista-service` | Cobertura, Swagger y validacion de endpoints |
-| `log-service` | Cobertura, Swagger y documentacion final |
-| `metrica-service` | Cobertura y validacion de metricas |
-| `fabricacion-service` | Cobertura y validacion de flujo productivo |
-| `despacho-service` | Cobertura y validacion de despacho |
-| Proyecto completo | Arquitectura, auditoria final, README y documentos de entrega |
+| Estudiante | Sebastian Valderrama |
+| Modalidad | Proyecto individual |
+| Rol | Desarrollador único y responsable integral del proyecto |
+| Repositorio | `https://github.com/sevalderramar/Casa-de-la-Impresion` |
+
+Mi sistema administra el ciclo completo de pedidos de Casa de la Impresión: desde el registro de clientes y productos, pasando por la creación del pedido, el cambio y seguimiento de estado, la fabricación, el despacho, las métricas operacionales y el registro de auditoría (logs). Lo separé en microservicios para que cada dominio se pueda mantener, probar y desplegar de forma independiente.
+
+Definí 14 RF documentados en `docs/matriz-requerimientos.md`: autenticar usuarios (RF-01), gestionar usuarios (RF-02), gestionar clientes (RF-03), gestionar productos (RF-04), crear/consultar pedidos (RF-05), cambiar estado (RF-06), consultar historial (RF-07), gestión de despacho (RF-08), fabricación (RF-09), métricas (RF-10), transportistas (RF-11), logs (RF-12) y autenticación (RF-14). Cada uno tiene su servicio responsable y sus endpoints principales.
+
+## Participación Por Módulo
+
+Trabajé en todos los módulos del proyecto: `discovery-server`, `api-gateway`, `auth-service`, `cliente-service`, `producto-service`, `pedido-service`, `estado-service`, `despacho-service`, `fabricacion-service`, `metrica-service`, `transportista-service` y `log-service`.
+
+| Área | Tareas realizadas |
+|---|---|
+| Arquitectura | Separación en microservicios, Eureka Discovery y Gateway |
+| Backend | Endpoints REST, DTOs, servicios, repositorios y configuración |
+| Integración | Feign/REST entre pedido, cliente, producto y estado |
+| Seguridad | JWT por variable de entorno, filtros y configuración demo |
+| Documentación | README, docs técnicos, funcionales, matriz, Render y defensa |
+| Pruebas | JUnit, Mockito, JaCoCo y pruebas REST manuales |
+| Despliegue | Docker Compose local y Render para el flujo principal |
 
 ## Commits Relevantes
 
 | Hash | Commit | Aporte |
 |---|---|---|
-| `628f855` | `docs: actualizar resumen final de entrega` | README final con metricas, Swagger y evidencias |
-| `abdf512` | `docs: documentar swagger log service` | Swagger/OpenAPI en `log-service` |
-| `60a9bf3` | `docs: documentar swagger transportista service` | Swagger/OpenAPI en `transportista-service` |
-| `1a7be11` | `docs: documentar swagger estado service` | Swagger/OpenAPI en `estado-service` |
-| `938fae2` | `docs: documentar swagger auth service` | Swagger/OpenAPI en `auth-service` |
-| `19bc033` | `test: ampliar cobertura log service` | Pruebas y JaCoCo para `log-service` |
-| `dc48050` | `test: ampliar cobertura transportista service` | Pruebas y JaCoCo para `transportista-service` |
-| `5c1ecd1` | `test: ampliar cobertura auth service` | Pruebas y JaCoCo para `auth-service` |
-| `eced2f7` | `test: ampliar cobertura metrica service` | Pruebas y JaCoCo para `metrica-service` |
-| `2734355` | `test: ampliar cobertura fabricacion service` | Pruebas y JaCoCo para `fabricacion-service` |
-| `f39df2a` | `test: ampliar cobertura despacho service` | Pruebas y JaCoCo para `despacho-service` |
-| `dee2aad` | `test: ampliar cobertura estado service` | Pruebas y JaCoCo para `estado-service` |
-
-## Tareas Realizadas
-
-| Tarea | Resultado |
-|---|---|
-| Ampliar pruebas unitarias | 452 tests pasando en auditoria final |
-| Configurar o validar JaCoCo | 10 microservicios con cobertura de lineas sobre 80% |
-| Documentar Swagger/OpenAPI | 10 microservicios con Swagger disponible |
-| Auditar proyecto completo | Identificacion de pendientes documentales y de Render |
-| Actualizar README final | Evidencias y comandos para defensa agregados |
-| Crear documentacion formal | Carpeta `docs/` con entregables finales |
+| `30344ca` | `docs: actualizar despliegue render y validacion tecnica` | Documentación final de Render y validación técnica |
+| `7faebb0` | `fix: usar PORT en servicios base para render` | Soporte de variable `PORT` para Render |
+| `ff8fa9f` | `docs: documentar discovery server en render` | URL real de Eureka en Render |
+| `b3fe782` | `fix: usar PORT en discovery server para render` | Discovery compatible con Render |
+| `8b33a8d` | `docs: documentar validacion docker compose con eureka` | Evidencia de Docker/Eureka local |
+| `8f27e7c` | `chore: configurar docker compose con eureka discovery` | Demo Docker mínima con Eureka |
+| `0a5377d` | `feat: enrutar gateway mediante eureka` | Gateway con rutas `lb://` |
+| `53d688a` | `feat: registrar servicios restantes en eureka` | Microservicios como clientes Eureka |
+| `b7a3477` | `feat: agregar discovery server con eureka` | Servidor Eureka |
 
 ## Feedback Corregido
 
-| Feedback | Correccion aplicada |
+| Feedback | Corrección aplicada | Evidencia |
+|---|---|---|
+| Poca cobertura | Tests ampliados en 10 microservicios | 452 tests documentados, JaCoCo sobre 80% |
+| Swagger incompleto | Swagger/OpenAPI en microservicios de dominio | `/swagger-ui/index.html`, `/v3/api-docs` |
+| Falta Discovery | Eureka Server y clientes Eureka | `discovery-server`, Eureka apps en Render |
+| Gateway limitado | Rutas `lb://` centralizadas | `api-gateway/application.yml` |
+| Render pendiente | Flujo principal desplegado | Discovery, Gateway, cliente, producto, estado, pedido |
+| Evidencias faltantes | Estructura `docs/evidencias/` creada | READMEs de evidencia |
+
+## Endpoints Y Flujos Asociados
+
+| Flujo | Endpoint o evidencia |
 |---|---|
-| Pocos servicios con tests | Se amplio cobertura a los 10 microservicios |
-| Swagger incompleto | Se documento Swagger en auth, estado, transportista y log, y se audito el resto |
-| Falta evidencia final | README y docs incluyen metricas, URLs y comandos |
-| Falta cierre documental | Se generaron documentos obligatorios de entrega |
+| Eureka Render | `https://discovery-server-gjd0.onrender.com/eureka/apps` |
+| Gateway clientes | `https://api-gateway-c9qz.onrender.com/api/clientes` |
+| Gateway productos | `https://api-gateway-c9qz.onrender.com/api/productos` |
+| Gateway pedidos | `https://api-gateway-c9qz.onrender.com/api/pedidos` |
+| Swagger cliente | `https://cliente-service-6yfy.onrender.com/swagger-ui/index.html` |
+| Swagger producto | `https://producto-service-ulv6.onrender.com/swagger-ui/index.html` |
+| Swagger estado | `https://estado-service.onrender.com/swagger-ui/index.html` |
+| Swagger pedido | `https://pedido-service-47kn.onrender.com/swagger-ui/index.html` |
 
-## Archivos Principales
+## Pruebas Unitarias Y REST
 
-| Archivo o carpeta | Uso |
+| Evidencia | Resultado |
 |---|---|
-| `README.md` | Resumen final de entrega |
-| `docs/matriz-requerimientos.md` | Trazabilidad RF/RNF |
-| `docs/documentacion-tecnica.md` | Arquitectura, ejecucion y despliegue |
-| `docs/documentacion-funcional.md` | Actores, flujos y reglas |
-| `docs/pruebas-rest/casa-de-la-impresion.http` | Pruebas manuales REST |
-| `log-service/src/main/java/...` | Swagger y pruebas del servicio de logs |
-| `transportista-service/src/main/java/...` | Swagger y pruebas de transportistas |
-| `auth-service/src/main/java/...` | Swagger, JWT y usuarios |
-| `estado-service/src/main/java/...` | Estados e historial |
+| Suite documentada | 452 tests |
+| Cobertura | 10 microservicios sobre 80% |
+| REST local/remoto | `docs/pruebas-rest/casa-de-la-impresion.http` |
+| Gateway remoto | Clientes, productos y pedidos validados |
+| Estado remoto | `/actuator/health` validado |
 
-## Endpoints Asociados Que Debe Dominar
+## Regla De Negocio Que Domino
 
-| Servicio | Endpoints |
+Un pedido debe relacionarse con un cliente y productos existentes. El flujo principal valida cliente y producto, crea el pedido y registra/consulta su estado. Esta regla conecta `pedido-service`, `cliente-service`, `producto-service` y `estado-service`.
+
+## Relación De BD Que Domino
+
+| Relación | Explicación |
 |---|---|
-| `auth-service` | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/ping`, `/api/auth/usuarios` |
-| `estado-service` | `POST /api/estados`, `GET /api/estados/pedido/{numeroPedido}`, `GET /api/estados/pedido/{numeroPedido}/ultimo` |
-| `transportista-service` | `POST /api/transportistas`, `GET /api/transportistas`, `GET /api/transportistas/{id}`, `PUT /api/transportistas/{id}`, `GET /api/transportistas/ping` |
-| `log-service` | `POST /api/logs`, `GET /api/logs`, `GET /api/logs/ping` |
-| `metrica-service` | `/api/metricas/clientes/{id}`, `/ranking`, `/productos/top`, `/ventas` |
+| Pedido - Cliente | El pedido referencia un cliente existente |
+| Pedido - Producto | El pedido contiene productos y cantidades |
+| Pedido - Estado | El pedido mantiene historial de estados |
+| Pedido - Despacho | El despacho está asociado a un número de pedido |
+| Servicio - Log | Las operaciones son trazables por servicio y resultado |
 
-## Pruebas Asociadas
+## Comunicación Entre Servicios Que Domino
 
-| Servicio | Pruebas relevantes |
+El usuario entra por el API Gateway. El Gateway consulta a Eureka y enruta con `lb://`. `pedido-service` usa variables Feign para llamar a cliente, producto y estado en Render. Eureka requiere un hostname público y `securePort` 443 para evitar que se registren hostnames internos de Render.
+
+## Dificultad Técnica Personal Y Solución
+
+| Dificultad | Solución |
 |---|---|
-| `auth-service` | `AuthControllerTest`, `UsuarioControllerTest`, `JwtAuthFilterTest`, `JwtUtilTest` |
-| `estado-service` | `EstadoControllerTest`, `EstadoServiceTest`, `SecurityConfigTest` |
-| `transportista-service` | `TransportistaControllerTest`, `TransportistaServiceImplTest` |
-| `log-service` | `LogControllerTest`, `LogServiceImplTest`, `LogEntradaTest` |
-| `metrica-service` | `MetricaControllerTest`, `MetricaServiceImplTest` |
-
-## Regla De Negocio Que Domina
-
-La trazabilidad de pedidos se sostiene con cambios de estado e historial. Cada cambio debe quedar consultable por numero de pedido y permitir identificar el ultimo estado. Esta regla conecta `pedido-service` con `estado-service` y permite explicar el ciclo completo del pedido.
-
-## Relacion De Datos Que Domina
-
-| Relacion | Explicacion |
-|---|---|
-| Pedido - Cliente | Un pedido referencia cliente existente |
-| Pedido - Producto | Un pedido contiene productos y cantidades |
-| Pedido - Estado | Un pedido tiene cambios de estado historicos |
-| Pedido - Despacho | Un despacho se asocia a numero de pedido |
-| Pedido - Fabricacion | Una orden de fabricacion representa avance productivo |
-| Servicio - Log | Cada evento puede registrar servicio, operacion y resultado |
-
-## Comunicacion Entre Servicios Que Domina
-
-El sistema usa Gateway para entrada externa y OpenFeign/REST para llamadas internas. Se implemento `discovery-server` con Eureka Server en `http://localhost:8761`; los 10 microservicios y el `api-gateway` se registran como clientes Eureka. El Gateway enruta mediante URIs `lb://` y mantiene los prefijos `/api/**`.
-
-## Aporte Personal En Discovery
-
-Como responsable integral del proyecto, Sebastian Valderrama implemento el modulo `discovery-server`, registro los microservicios como clientes Eureka, actualizo el Gateway para enrutar con `lb://` y valido el flujo usando la consola Eureka y endpoints expuestos por Gateway.
-
-## Dificultad Tecnica Y Solucion
-
-| Dificultad | Solucion aplicada |
-|---|---|
-| Aumentar cobertura sin cambiar logica | Crear pruebas unitarias y de controller enfocadas en comportamiento real |
-| Documentar Swagger sin alterar endpoints | Agregar anotaciones y `OpenApiConfig` sin cambiar rutas ni servicios |
-| Incorporar discovery real | Agregar Eureka Server, registrar servicios y actualizar Gateway a `lb://` |
-| Cerrar documentacion final | Crear documentos formales con estado real y pendientes claros |
-
-## Checklist Personal
-
-| Item | Estado |
-|---|---|
-| Conozco el flujo de pedido completo | Si |
-| Puedo explicar Gateway y rutas | Si |
-| Puedo mostrar consola Eureka y servicios registrados | Si |
-| Puedo mostrar Swagger de servicios | Si |
-| Puedo mostrar JaCoCo y tests | Si |
-| Puedo explicar JWT y modo demo/local | Si |
-| Puedo justificar Docker Compose minimo | Si |
-| Puedo explicar Eureka real y Gateway `lb://` | Si |
-| Puedo explicar pendientes de Render | Si |
+| Gateway devolvía 503/500 en Render | Despertar los servicios, revisar Eureka y configurar hostnames públicos con puerto seguro 443 |
+| Servicios dormidos en Render Free | Documentar el flujo de "despertar" con `/actuator/health` antes de la demo |
+| Eureka registraba direcciones internas | Usar `EUREKA_INSTANCE_HOSTNAME`, `EUREKA_INSTANCE_SECURE_PORT_ENABLED=true`, `EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED=false`, `EUREKA_INSTANCE_SECURE_PORT=443` |
+| Persistencia remota en H2 | Documentar H2 como demo temporal, no productiva |

@@ -2,9 +2,9 @@
 
 ## Arquitectura General
 
-Casa de la Impresion usa una arquitectura de microservicios Spring Boot con Eureka Discovery, API Gateway, persistencia H2 para desarrollo/demo, seguridad JWT por variable de entorno, Swagger/OpenAPI y pruebas automatizadas. El sistema se organiza en 10 microservicios de dominio, un `discovery-server` y un `api-gateway`.
+Casa de la Impresion usa microservicios Spring Boot con Eureka Discovery, API Gateway, H2 para desarrollo/demo, JWT por variable de entorno, Swagger/OpenAPI y pruebas automatizadas. El proyecto fue desarrollado individualmente por Sebastian Valderrama.
 
-El servicio principal del dominio es `pedido-service`, porque concentra la operacion de crear, consultar y evolucionar pedidos. Se apoya en `cliente-service`, `producto-service` y `estado-service`. Los demas servicios cubren autenticacion, despacho, fabricacion, metricas, transportistas y logs.
+El flujo principal validado es cliente -> producto -> pedido -> estado -> gateway. `pedido-service` integra cliente, producto y estado; `api-gateway` centraliza la entrada HTTP y resuelve servicios registrados en Eureka mediante rutas `lb://`.
 
 ## Estructura Del Repositorio
 
@@ -27,26 +27,50 @@ Casa-de-la-impresion/
   .env.example
 ```
 
-## Servicios
+## Microservicios Y Responsabilidades
 
-| Servicio | Puerto local | Responsabilidad | Render |
+| Servicio | Puerto | Responsabilidad | Render |
 |---|---:|---|---|
 | `discovery-server` | 8761 | Eureka Server | `https://discovery-server-gjd0.onrender.com` |
 | `api-gateway` | 8080 | Gateway WebFlux con rutas `lb://` | `https://api-gateway-c9qz.onrender.com` |
-| `auth-service` | 8090 | Autenticacion JWT y usuarios | Pendiente |
+| `auth-service` | 8090 | Autenticacion JWT y usuarios | Pendiente remoto |
+| `cliente-service` | 8082 | Gestion de clientes | `https://cliente-service-6yfy.onrender.com` |
+| `producto-service` | 8083 | Gestion de productos | `https://producto-service-ulv6.onrender.com` |
 | `pedido-service` | 8081 | Pedidos e integraciones | `https://pedido-service-47kn.onrender.com` |
-| `cliente-service` | 8082 | Clientes | `https://cliente-service-6yfy.onrender.com` |
-| `producto-service` | 8083 | Productos/catalogo | `https://producto-service-ulv6.onrender.com` |
-| `despacho-service` | 8084 | Despachos | Pendiente |
-| `fabricacion-service` | 8085 | Ordenes de fabricacion | Pendiente |
-| `estado-service` | 8086 | Cambios de estado | `https://estado-service.onrender.com` |
-| `metrica-service` | 8087 | Metricas | Pendiente |
-| `transportista-service` | 8088 | Transportistas | Pendiente |
-| `log-service` | 8089 | Logs operacionales | Pendiente |
+| `estado-service` | 8086 | Cambios de estado e historial | `https://estado-service.onrender.com` |
+| `despacho-service` | 8084 | Despachos | Pendiente remoto |
+| `fabricacion-service` | 8085 | Ordenes de fabricacion | Pendiente remoto |
+| `metrica-service` | 8087 | Metricas | Pendiente remoto |
+| `transportista-service` | 8088 | Transportistas | Pendiente remoto |
+| `log-service` | 8089 | Logs operacionales | Pendiente remoto |
+
+## Modelo De Datos Resumido
+
+| Servicio | Datos principales |
+|---|---|
+| `auth-service` | Usuario, rol, credencial hasheada, JWT |
+| `cliente-service` | Cliente, RUT, email, telefono, direccion |
+| `producto-service` | Producto, categoria, precio, stock |
+| `pedido-service` | Pedido, detalle, clienteId, productoId, numeroPedido |
+| `estado-service` | Cambio de estado, numeroPedido, estado anterior/nuevo, fecha |
+| `despacho-service` | Despacho, numeroPedido, transportista, tracking |
+| `fabricacion-service` | Orden de fabricacion, estado productivo, historial |
+| `metrica-service` | Rankings, ventas, productos top |
+| `transportista-service` | Transportista, codigo, contacto, regiones |
+| `log-service` | Evento, servicio, operacion, usuario, resultado |
+
+## Relaciones Principales
+
+| Relacion | Descripcion |
+|---|---|
+| Pedido - Cliente | Un pedido referencia un cliente existente |
+| Pedido - Producto | Un pedido contiene productos y cantidades |
+| Pedido - Estado | Un pedido tiene historial de cambios de estado |
+| Pedido - Despacho | Un despacho se asocia a un numero de pedido |
+| Pedido - Fabricacion | Una orden de fabricacion representa avance productivo |
+| Servicio - Log | Cada operacion relevante puede registrarse como log |
 
 ## Discovery Eureka
-
-`discovery-server` ejecuta Eureka Server en el puerto local `8761`. Los microservicios y el Gateway se registran como clientes Eureka.
 
 Eureka local:
 
@@ -55,28 +79,16 @@ http://localhost:8761
 http://localhost:8761/eureka/apps
 ```
 
-Eureka Render validado:
+Eureka Render:
 
 ```text
 https://discovery-server-gjd0.onrender.com
 https://discovery-server-gjd0.onrender.com/eureka/apps
 ```
 
-Variable por entorno:
-
-```properties
-EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-```
-
-En Render:
-
-```properties
-EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
-```
+Los microservicios y el Gateway se registran como clientes Eureka. En Render se usa `EUREKA_INSTANCE_HOSTNAME` con hostname publico, `EUREKA_INSTANCE_SECURE_PORT_ENABLED=true`, `EUREKA_INSTANCE_NON_SECURE_PORT_ENABLED=false` y `EUREKA_INSTANCE_SECURE_PORT=443` para evitar hostnames internos no resolubles por Gateway.
 
 ## API Gateway
-
-El Gateway usa Spring Cloud Gateway WebFlux. Las rutas estan declaradas en `api-gateway/src/main/resources/application.yml` y usan `lb://` para resolver servicios por Eureka.
 
 | Ruta | Servicio Eureka | URI interna |
 |---|---|---|
@@ -91,11 +103,44 @@ El Gateway usa Spring Cloud Gateway WebFlux. Las rutas estan declaradas en `api-
 | `/api/transportistas/**` | `transportista-service` | `lb://transportista-service` |
 | `/api/logs/**` | `log-service` | `lb://log-service` |
 
-El Gateway no tiene Swagger propio porque no expone controladores de negocio. Swagger se valida directamente en cada microservicio.
+Gateway Render validado:
 
-## Comunicacion Entre Servicios
+```text
+https://api-gateway-c9qz.onrender.com/api/clientes
+https://api-gateway-c9qz.onrender.com/api/productos
+https://api-gateway-c9qz.onrender.com/api/pedidos
+```
 
-`pedido-service` usa OpenFeign/REST para consultar cliente, producto y estado. En la demo Render actual conserva URLs directas por variables:
+## Perfiles De Configuracion
+
+| Perfil | Uso |
+|---|---|
+| `h2` | Desarrollo local, Docker demo y Render demo temporal |
+| `prod` | Base externa por variables `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` donde aplica |
+
+H2 en Render se usa solo como persistencia temporal de demo. No es base productiva.
+
+## Variables De Entorno
+
+```properties
+SPRING_PROFILES_ACTIVE=h2
+JWT_SECRET=<TU_JWT_SECRET>
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+```
+
+Render:
+
+```properties
+SPRING_PROFILES_ACTIVE=h2
+JWT_SECRET=<JWT_SECRET_RENDER>
+JWT_EXPIRATION_MS=86400000
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=https://discovery-server-gjd0.onrender.com/eureka/
+EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+EUREKA_CLIENT_FETCH_REGISTRY=true
+```
+
+`pedido-service` Render:
 
 ```properties
 CLIENTE_SERVICE_URL=https://cliente-service-6yfy.onrender.com
@@ -105,121 +150,122 @@ FEIGN_CONNECT_TIMEOUT_MS=3000
 FEIGN_READ_TIMEOUT_MS=5000
 ```
 
-El Gateway, en cambio, no usa URLs directas para el enrutamiento: resuelve por Eureka y rutas `lb://`.
+## Seguridad JWT
 
-## Perfiles, H2 Y JWT
+Los servicios inyectan `jwt.secret=${JWT_SECRET}`. No se versionan secretos reales. La documentacion usa placeholders seguros como `<TU_JWT_SECRET>` y `<JWT_SECRET_RENDER>`. Algunos endpoints permanecen permisivos para demo academica, especialmente Swagger, H2 y health checks.
 
-Los microservicios usan `application.properties`, `application-h2.properties` y `application-prod.properties` donde aplica. El perfil `h2` permite ejecucion local y demo en Render sin base externa. H2 en Render debe considerarse temporal porque el contenedor puede reciclarse.
+## Comunicacion Entre Servicios
 
-Variables seguras de ejemplo:
+`pedido-service` consulta cliente, producto y estado mediante OpenFeign/REST configurado por variables. El Gateway enruta por Eureka con `lb://`, no por URLs HTTP fijas. Los errores remotos 400/404/500/503 se cubren con pruebas unitarias y escenarios REST.
 
-```properties
-SPRING_PROFILES_ACTIVE=h2
-JWT_SECRET=<TU_JWT_SECRET>
-JWT_EXPIRATION_MS=86400000
-EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-```
+## Manejo De Errores
 
-`JWT_SECRET` se inyecta como variable de entorno mediante `jwt.secret=${JWT_SECRET}`. No se debe versionar ningun secreto real.
+Los servicios usan validaciones DTO, excepciones de negocio y handlers globales donde aplica. En Render, `503` o `500` desde Gateway suele indicar servicio dormido, servicio ausente en Eureka o hostname interno de Render.
+
+## Logs
+
+`log-service` registra eventos con servicio, operacion, usuario, resultado, detalle y fecha. Es apoyo de auditoria operacional y trazabilidad, validado localmente con pruebas unitarias y REST.
+
+## Pruebas
+
+La suite documentada tiene 452 tests. Se usan JUnit 5, Mockito y JaCoCo. Los 10 microservicios de dominio superan 80% de cobertura de lineas.
 
 ## Swagger/OpenAPI
 
-Los 10 microservicios de dominio tienen Swagger/OpenAPI con Springdoc.
-
 | Servicio | Swagger local | Swagger Render |
 |---|---|---|
-| `auth-service` | `http://localhost:8090/swagger-ui/index.html` | Pendiente |
+| `auth-service` | `http://localhost:8090/swagger-ui/index.html` | Pendiente remoto |
 | `cliente-service` | `http://localhost:8082/swagger-ui/index.html` | `https://cliente-service-6yfy.onrender.com/swagger-ui/index.html` |
 | `producto-service` | `http://localhost:8083/swagger-ui/index.html` | `https://producto-service-ulv6.onrender.com/swagger-ui/index.html` |
 | `pedido-service` | `http://localhost:8081/swagger-ui/index.html` | `https://pedido-service-47kn.onrender.com/swagger-ui/index.html` |
 | `estado-service` | `http://localhost:8086/swagger-ui/index.html` | `https://estado-service.onrender.com/swagger-ui/index.html` |
-| `despacho-service` | `http://localhost:8084/swagger-ui/index.html` | Pendiente |
-| `fabricacion-service` | `http://localhost:8085/swagger-ui/index.html` | Pendiente |
-| `metrica-service` | `http://localhost:8087/swagger-ui/index.html` | Pendiente |
-| `transportista-service` | `http://localhost:8088/swagger-ui/index.html` | Pendiente |
-| `log-service` | `http://localhost:8089/swagger-ui/index.html` | Pendiente |
+| `despacho-service` | `http://localhost:8084/swagger-ui/index.html` | Pendiente remoto |
+| `fabricacion-service` | `http://localhost:8085/swagger-ui/index.html` | Pendiente remoto |
+| `metrica-service` | `http://localhost:8087/swagger-ui/index.html` | Pendiente remoto |
+| `transportista-service` | `http://localhost:8088/swagger-ui/index.html` | Pendiente remoto |
+| `log-service` | `http://localhost:8089/swagger-ui/index.html` | Pendiente remoto |
 
-Validar tambien `/v3/api-docs` por servicio cuando se requiera el JSON OpenAPI.
+## Ejecución desde cero
 
-## Modelo De Datos Resumido
+### Requisitos Previos
 
-| Servicio | Datos principales |
+| Requisito | Version/uso |
 |---|---|
-| `auth-service` | Usuarios, credenciales hasheadas, roles, JWT |
-| `cliente-service` | Cliente, RUT, contacto, direccion |
-| `producto-service` | Producto, nombre, categoria, precio, stock |
-| `pedido-service` | Pedido, detalle, cliente, productos, numero de pedido |
-| `estado-service` | Cambio de estado, numero de pedido, estado, timestamp |
-| `despacho-service` | Despacho, numero de pedido, transportista, tracking |
-| `fabricacion-service` | Orden de fabricacion, historial productivo |
-| `metrica-service` | Rankings, ventas, productos top |
-| `transportista-service` | Transportista, codigo, contacto, regiones |
-| `log-service` | Log de servicio, operacion, usuario, resultado |
+| Java | 21 |
+| Maven Wrapper | `mvnw.cmd` en Windows, `./mvnw` en Linux/macOS |
+| Docker | Opcional para demo local |
+| Git | Clonar rama `main` |
 
-## Manejo De Errores
+### Variables De Entorno
 
-Los servicios incluyen validaciones DTO, excepciones de negocio y handlers globales donde aplica. Las pruebas cubren entradas invalidas, recursos inexistentes y errores remotos Feign. En Render, un `503` desde Gateway normalmente indica servicio dormido, no registrado en Eureka o registro con hostname interno.
+PowerShell:
 
-## Docker Compose
+```powershell
+$env:SPRING_PROFILES_ACTIVE="h2"
+$env:JWT_SECRET="<TU_JWT_SECRET>"
+$env:JWT_EXPIRATION_MS="86400000"
+```
 
-`docker-compose.yml` implementa una demo minima local del flujo principal con Eureka real:
+Linux/macOS:
 
-| Servicio | Incluido |
-|---|---|
-| `discovery-server` | Si |
-| `api-gateway` | Si |
-| `cliente-service` | Si |
-| `producto-service` | Si |
-| `pedido-service` | Si |
-| `estado-service` | Si |
+```bash
+export SPRING_PROFILES_ACTIVE=h2
+export JWT_SECRET=<TU_JWT_SECRET>
+export JWT_EXPIRATION_MS=86400000
+```
 
-Comandos validados:
+### Orden De Arranque Local
+
+1. `discovery-server`
+2. `cliente-service`
+3. `producto-service`
+4. `estado-service`
+5. `pedido-service`
+6. `api-gateway`
+
+Windows:
+
+```powershell
+cd discovery-server
+.\mvnw.cmd spring-boot:run
+```
+
+Linux/macOS:
+
+```bash
+cd discovery-server
+./mvnw spring-boot:run
+```
+
+Para `pedido-service` local:
+
+```powershell
+$env:CLIENTE_SERVICE_URL="http://localhost:8082"
+$env:PRODUCTO_SERVICE_URL="http://localhost:8083"
+$env:ESTADO_SERVICE_URL="http://localhost:8086"
+.\mvnw.cmd spring-boot:run
+```
+
+### Docker Compose
 
 ```powershell
 docker compose config
 docker compose build
 docker compose up -d
 docker compose ps
+```
+
+### Verificaciones Locales
+
+```powershell
 curl.exe http://localhost:8761
 curl.exe http://localhost:8080/actuator/health
 curl.exe http://localhost:8080/api/clientes
 curl.exe http://localhost:8080/api/productos
 curl.exe http://localhost:8080/api/pedidos
-docker compose down
 ```
 
-## Render
-
-Render esta validado para `discovery-server`, `api-gateway`, `cliente-service`, `producto-service`, `estado-service` y `pedido-service`. La configuracion detallada esta en `docs/render-deploy.md`.
-
-Render Free puede dormir servicios por inactividad. Flujo recomendado:
-
-1. Despertar cada servicio con `/actuator/health`.
-2. Revisar `https://discovery-server-gjd0.onrender.com/eureka/apps`.
-3. Probar Gateway en `/api/clientes`, `/api/productos`, `/api/pedidos`.
-4. Probar Swagger directo.
-5. Crear cliente, producto y pedido.
-
-Las rutas raiz `/` de microservicios pueden responder `404` o `500`; no son endpoints funcionales obligatorios.
-
-## Pruebas Y Cobertura
-
-La suite final documentada tiene 452 tests pasando. Los 10 microservicios de dominio tienen JaCoCo y superan 80% de cobertura de lineas.
-
-| Servicio | Tests | Cobertura lineas |
-|---|---:|---:|
-| `auth-service` | 50 | 86.38% |
-| `cliente-service` | 36 | 83.33% |
-| `producto-service` | 42 | 86.39% |
-| `pedido-service` | 44 | 83.67% |
-| `estado-service` | 33 | 91.97% |
-| `despacho-service` | 48 | 95.88% |
-| `fabricacion-service` | 76 | 96.76% |
-| `metrica-service` | 46 | 92.82% |
-| `transportista-service` | 40 | 90.65% |
-| `log-service` | 37 | 91.22% |
-
-Comandos principales:
+### Comandos De Pruebas
 
 ```powershell
 cd cliente-service; .\mvnw.cmd clean verify
@@ -229,3 +275,7 @@ cd ..\pedido-service; .\mvnw.cmd clean verify
 cd ..\api-gateway; .\mvnw.cmd clean package -DskipTests
 cd ..\discovery-server; .\mvnw.cmd clean package -DskipTests
 ```
+
+### Despliegue Render
+
+La configuracion final esta en `docs/render-deploy.md`. En Render Free se deben despertar servicios con `/actuator/health`, revisar Eureka y luego probar Gateway. Las rutas raiz `/` pueden responder `404` o `500`; validar con `/actuator/health`, Swagger, `/v3/api-docs` y rutas `/api/**`.

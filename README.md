@@ -2,7 +2,7 @@
 
 Sistema backend para la gestion de pedidos de Casa de la Impresion. El proyecto esta construido con microservicios Java/Spring Boot, Eureka Discovery, API Gateway, Swagger/OpenAPI, pruebas unitarias con JUnit/Mockito/JaCoCo, Docker Compose local y despliegue remoto en Render para la demo tecnica principal.
 
-Autor: Sebastian Valderrama.
+Proyecto individual desarrollado por Sebastian Valderrama. No existe equipo asociado; la defensa se documenta como defensa tecnica individual.
 
 Repositorio: https://github.com/sevalderramar/Casa-de-la-Impresion
 
@@ -79,6 +79,17 @@ https://api-gateway-c9qz.onrender.com/api/pedidos
 ```
 
 El Gateway no expone Swagger propio porque no contiene controladores de negocio; Swagger/OpenAPI vive en los microservicios de dominio.
+
+Flujo funcional remoto validado:
+
+1. Cliente creado y consultado.
+2. Producto creado y consultado.
+3. Pedido creado con `clienteId` y `productoId` existentes.
+4. Pedido consultado desde `pedido-service`.
+5. Cliente, producto y pedido consultados desde API Gateway.
+6. Eureka muestra servicios registrados en estado `UP`.
+7. `estado-service` validado con `/actuator/health`.
+8. Swagger usado para cliente, producto y pedido.
 
 ## Swagger/OpenAPI
 
@@ -245,7 +256,7 @@ docker compose down
 
 ## Render
 
-Servicios Render ya validados:
+Servicios Render principales ya desplegados y validados:
 
 | Servicio | Health/API validada |
 |---|---|
@@ -253,10 +264,12 @@ Servicios Render ya validados:
 | `api-gateway` | `https://api-gateway-c9qz.onrender.com/actuator/health` |
 | `cliente-service` | `https://cliente-service-6yfy.onrender.com/api/clientes` |
 | `producto-service` | `https://producto-service-ulv6.onrender.com/api/productos` |
-| `estado-service` | `https://estado-service.onrender.com/swagger-ui/index.html` |
+| `estado-service` | `https://estado-service.onrender.com/actuator/health` y `https://estado-service.onrender.com/swagger-ui/index.html` |
 | `pedido-service` | `https://pedido-service-47kn.onrender.com/api/pedidos` |
 
 Render Free puede dormir servicios por inactividad. Para la demo tecnica, despertar primero cada servicio con `/actuator/health`, revisar Eureka y luego probar el Gateway.
+
+H2 remoto se usa solo como persistencia temporal de demo. No representa una base productiva ni persistencia garantizada ante reciclaje de contenedores.
 
 Flujo de validacion tecnica remota:
 
@@ -311,6 +324,19 @@ cd ..\discovery-server; .\mvnw.cmd clean package -DskipTests
 | Swagger pedido | `https://pedido-service-47kn.onrender.com/swagger-ui/index.html` |
 | Docker local | `docker compose ps` |
 | Tests y cobertura | `target/site/jacoco/index.html` por microservicio |
+
+## Evidencias Pendientes Por Incorporar
+
+Las capturas finales todavia deben incorporarse en `docs/evidencias/` o en el informe final de entrega. Evidencias esperadas:
+
+| Evidencia | Carpeta sugerida |
+|---|---|
+| Render dashboard con servicios desplegados | `docs/evidencias/render/` |
+| Eureka con servicios `UP` | `docs/evidencias/eureka/` |
+| Swagger cliente, producto, pedido y estado | `docs/evidencias/swagger/` |
+| Gateway clientes/productos/pedidos | `docs/evidencias/gateway/` |
+| GitHub con ultimo commit en `main` | `docs/evidencias/github/` |
+| README con URLs Render finales | `docs/evidencias/github/` |
 
 ## Tecnologias
 
